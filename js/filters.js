@@ -56,6 +56,7 @@ function selectFilter(filterItem, elements, state) {
 function openAdjustmentPanel(filterName, elements, state) {
   elements.adjustmentTitle.textContent = `${filterName} Adjustment`;
   elements.adjustmentsSidebar.classList.add('active');
+  elements.downloadBtn.style.display = 'none';
   if (state.previousSettings && state.previousSettings.filterId === state.currentFilter.id) {
     elements.intensitySlider.value = state.previousSettings.intensity;
     elements.contrastSlider.value = state.previousSettings.contrast;
@@ -76,6 +77,7 @@ function openAdjustmentPanel(filterName, elements, state) {
 
 export function closeAdjustmentPanel(elements) {
   elements.adjustmentsSidebar.classList.remove('active');
+  elements.downloadBtn.style.display = 'flex';
 }
 
 function cancelFilterAdjustment(elements, state) {

@@ -26,6 +26,18 @@ function downloadImage(state) {
     showToast('No image to download', 'warning');
     return;
   }
+  const link = document.createElement('a');
+  link.href = state.currentImage;
+  const match = state.currentImage.match(/^data:(image\/\w+);/);
+  let extension = 'png';
+  if (match) {
+    const mime = match[1].split('/')[1];
+    extension = mime === 'jpeg' ? 'jpg' : mime;
+  }
+  link.download = `image.${extension}`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   showToast('Image downloaded successfully', 'success');
 }
 
