@@ -388,12 +388,17 @@ function applyFilterAdjustment(elements, state) {
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;
-      applyBrightnessContrast(
+      const result = applyBrightnessContrast(
         elements.previewImage,
         elements.previewImage,
         parseInt(elements.brightnessSlider.value, 10),
         parseInt(elements.contrastSlider.value, 10)
       );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
     };
     applyCaliforniaFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'golden-hills') {
@@ -402,12 +407,17 @@ function applyFilterAdjustment(elements, state) {
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;
-      applyBrightnessContrast(
+      const result = applyBrightnessContrast(
         elements.previewImage,
         elements.previewImage,
         parseInt(elements.brightnessSlider.value, 10),
         parseInt(elements.contrastSlider.value, 10)
       );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
     };
     applyGoldenHillsFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'pfeiffer-beach') {
@@ -416,12 +426,17 @@ function applyFilterAdjustment(elements, state) {
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;
-      applyBrightnessContrast(
+      const result = applyBrightnessContrast(
         elements.previewImage,
         elements.previewImage,
         parseInt(elements.brightnessSlider.value, 10),
         parseInt(elements.contrastSlider.value, 10)
       );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
     };
     applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
