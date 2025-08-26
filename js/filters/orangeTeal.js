@@ -4,8 +4,8 @@
 // Build lookup tables for hue shift and saturation boost
 function buildOrangeTealLUT(
   sigmaH = 15,
-  warmH = 15,
-  coolH = 90,
+  warmH = 17, //original 15
+  coolH = 94, //original 90
   satBoostWarm = 1.45,
   satBoostCool = 1.20
 ) {
