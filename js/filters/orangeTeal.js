@@ -94,7 +94,7 @@ function hsvToRgb(h, s, v) {
   return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
 }
 
-export function applyOrangeTealFilter(imgEl) {
+export function applyOrangeTealFilter(imgEl, { brightness = 0, contrast = 0 } = {}) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   canvas.width = imgEl.naturalWidth;
@@ -102,6 +102,9 @@ export function applyOrangeTealFilter(imgEl) {
   ctx.drawImage(imgEl, 0, 0);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
+
+  const brightnessOffset = (brightness / 100) * 255;
+  const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
 
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i];
@@ -117,9 +120,13 @@ export function applyOrangeTealFilter(imgEl) {
     const newVal = smoothContrast(v);
     const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
 
-    data[i] = nr;
-    data[i + 1] = ng;
-    data[i + 2] = nb;
+    let rAdj = contrastFactor * (nr - 128) + 128 + brightnessOffset;
+    let gAdj = contrastFactor * (ng - 128) + 128 + brightnessOffset;
+    let bAdj = contrastFactor * (nb - 128) + 128 + brightnessOffset;
+
+    data[i] = Math.min(255, Math.max(0, rAdj));
+    data[i + 1] = Math.min(255, Math.max(0, gAdj));
+    data[i + 2] = Math.min(255, Math.max(0, bAdj));
   }
 
   ctx.putImageData(imageData, 0, 0);

@@ -8,6 +8,7 @@ export const elements = {
   cancelAdjustment: document.getElementById('cancelAdjustment'),
   applyAdjustment: document.getElementById('applyAdjustment'),
   adjustmentTitle: document.getElementById('adjustmentTitle'),
+  intensityControl: document.getElementById('intensityControl'),
   intensitySlider: document.getElementById('intensitySlider'),
   intensityValue: document.getElementById('intensityValue'),
   contrastSlider: document.getElementById('contrastSlider'),
