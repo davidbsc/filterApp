@@ -108,9 +108,16 @@ export function applyPfeifferBeachFilter(sourceImg, targetEl, options = {}) {
     g += constantShift.g;
     b += constantShift.b;
     // Interpolate with the original pixel
-    const rNew = Math.max(0, Math.min(255, data[i] * (1 - blend) + r * blend));
-    const gNew = Math.max(0, Math.min(255, data[i + 1] * (1 - blend) + g * blend));
-    const bNew = Math.max(0, Math.min(255, data[i + 2] * (1 - blend) + b * blend));
+    let rNew = Math.max(0, Math.min(255, data[i] * (1 - blend) + r * blend));
+    let gNew = Math.max(0, Math.min(255, data[i + 1] * (1 - blend) + g * blend));
+    let bNew = Math.max(0, Math.min(255, data[i + 2] * (1 - blend) + b * blend));
+
+    // Final colour balance: add 65 yellow on the yellow/blue axis
+    const yellowShift = 65 * blend;
+    rNew = Math.max(0, Math.min(255, rNew + yellowShift));
+    gNew = Math.max(0, Math.min(255, gNew + yellowShift));
+    bNew = Math.max(0, Math.min(255, bNew - yellowShift));
+
     data[i] = rNew;
     data[i + 1] = gNew;
     data[i + 2] = bNew;
