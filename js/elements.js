@@ -14,6 +14,7 @@ export const elements = {
   contrastValue: document.getElementById('contrastValue'),
   brightnessSlider: document.getElementById('brightnessSlider'),
   brightnessValue: document.getElementById('brightnessValue'),
+  customSliders: document.getElementById('customSliders'),
   downloadBtn: document.getElementById('downloadBtn'),
   undoBtn: document.getElementById('undoBtn'),
   resetBtn: document.getElementById('resetBtn'),

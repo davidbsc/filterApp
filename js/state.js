@@ -8,6 +8,7 @@ export const state = {
     contrast: 0,
     brightness: 0
   },
+  customSettings: {},
   previousSettings: null,
   appliedFilters: [],
   imageHistory: []

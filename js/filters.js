@@ -4,6 +4,15 @@ import { applyBlackWhiteFilter } from './filters/blackWhite.js';
 import { applyVintageFilter } from './filters/vintage.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
+const sliderConfigs = {
+  vintage: [
+    { name: 'alpha', label: 'Alpha', min: -100, max: 100, default: 0 },
+    { name: 'beta', label: 'Beta', min: -50, max: 50, default: 0 },
+    { name: 'gamma', label: 'Gamma', min: -50, max: 50, default: 0 },
+    { name: 'delta', label: 'Delta', min: -50, max: 50, default: 0 }
+  ]
+};
+
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
     item.addEventListener('click', () => selectFilter(item, elements, state));
@@ -41,6 +50,54 @@ export function initFilters(elements, state) {
   });
 }
 
+function setupCustomSliders(filterId, elements, state) {
+  elements.customSliders.innerHTML = '';
+  const configs = sliderConfigs[filterId];
+  if (!configs) return;
+  configs.forEach(cfg => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'intensity-control';
+
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'control-label';
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = cfg.label;
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'slider-value';
+    valueSpan.id = `${cfg.name}Value`;
+    labelDiv.appendChild(nameSpan);
+    labelDiv.appendChild(valueSpan);
+
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = 'slider-container';
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = cfg.min;
+    input.max = cfg.max;
+    input.value = state.customSettings[cfg.name] ?? cfg.default;
+    input.className = 'slider';
+    input.id = `${cfg.name}Slider`;
+    sliderContainer.appendChild(input);
+
+    wrapper.appendChild(labelDiv);
+    wrapper.appendChild(sliderContainer);
+    elements.customSliders.appendChild(wrapper);
+
+    const format = val => (val > 0 ? `+${val}` : `${val}`);
+    const update = () => {
+      const val = parseInt(input.value, 10);
+      state.customSettings[cfg.name] = val;
+      valueSpan.textContent = format(val);
+    };
+    update();
+    input.addEventListener('input', update);
+    input.addEventListener('change', () => {
+      update();
+      previewCurrentFilter(elements, state);
+    });
+  });
+}
+
 function selectFilter(filterItem, elements, state) {
   if (!state.currentImage) {
     showToast('Please upload an image first', 'warning');
@@ -62,14 +119,17 @@ function openAdjustmentPanel(filterName, elements, state) {
     elements.intensitySlider.value = state.previousSettings.intensity;
     elements.contrastSlider.value = state.previousSettings.contrast;
     elements.brightnessSlider.value = state.previousSettings.brightness;
+    state.customSettings = { ...state.previousSettings.customSettings };
   } else {
     elements.intensitySlider.value = 100;
     elements.contrastSlider.value = 0;
     elements.brightnessSlider.value = 0;
+    state.customSettings = {};
   }
   updateIntensityValue(elements);
   updateContrastValue(elements);
   updateBrightnessValue(elements);
+  setupCustomSliders(state.currentFilter.id, elements, state);
 
   state.previewBaseImage = new Image();
   state.previewBaseImage.src = state.currentImage;
@@ -79,6 +139,7 @@ function openAdjustmentPanel(filterName, elements, state) {
 export function closeAdjustmentPanel(elements) {
   elements.adjustmentsSidebar.classList.remove('active');
   elements.downloadBtn.style.display = 'flex';
+  elements.customSliders.innerHTML = '';
 }
 
 function cancelFilterAdjustment(elements, state) {
@@ -86,7 +147,8 @@ function cancelFilterAdjustment(elements, state) {
     filterId: state.currentFilter.id,
     intensity: elements.intensitySlider.value,
     contrast: elements.contrastSlider.value,
-    brightness: elements.brightnessSlider.value
+    brightness: elements.brightnessSlider.value,
+    customSettings: { ...state.customSettings }
   };
   elements.previewImage.src = state.previewBaseImage.src;
   state.previewBaseImage = null;
@@ -98,7 +160,8 @@ function applyFilterAdjustment(elements, state) {
   state.filterSettings = {
     intensity: parseInt(elements.intensitySlider.value, 10),
     contrast: parseInt(elements.contrastSlider.value, 10),
-    brightness: parseInt(elements.brightnessSlider.value, 10)
+    brightness: parseInt(elements.brightnessSlider.value, 10),
+    ...state.customSettings
   };
   const existingFilterIndex = state.appliedFilters.findIndex(f => f.id === state.currentFilter.id);
   if (existingFilterIndex !== -1) {
@@ -159,7 +222,11 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyVintageFilter(state.previewBaseImage, elements.previewImage, {
-      intensity: state.filterSettings.intensity
+      intensity: state.filterSettings.intensity,
+      alpha: state.filterSettings.alpha || 0,
+      beta: state.filterSettings.beta || 0,
+      gamma: state.filterSettings.gamma || 0,
+      delta: state.filterSettings.delta || 0
     });
   } else {
     state.previousSettings = null;
@@ -212,7 +279,11 @@ function previewCurrentFilter(elements, state) {
     applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
     const options = {
-      intensity: parseInt(elements.intensitySlider.value, 10)
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      alpha: state.customSettings.alpha || 0,
+      beta: state.customSettings.beta || 0,
+      gamma: state.customSettings.gamma || 0,
+      delta: state.customSettings.delta || 0
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;
