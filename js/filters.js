@@ -13,6 +13,52 @@ const sliderConfigs = {
   ]
 };
 
+function enableManualInput(slider, valueEl, defaultValue) {
+  let dragging = false;
+  slider.addEventListener('mousedown', () => {
+    dragging = false;
+  });
+  slider.addEventListener('mousemove', () => {
+    dragging = true;
+  });
+  slider.addEventListener('mouseup', () => {
+    if (dragging) return;
+    if (valueEl.querySelector('input')) return;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = slider.min;
+    input.max = slider.max;
+    input.value = slider.value;
+    input.className = 'slider-value-input';
+    valueEl.textContent = '';
+    valueEl.appendChild(input);
+    input.focus();
+    input.select();
+    const finalize = () => {
+      let val = parseInt(input.value, 10);
+      if (isNaN(val)) val = slider.value;
+      const min = parseInt(slider.min, 10);
+      const max = parseInt(slider.max, 10);
+      val = Math.min(Math.max(val, min), max);
+      slider.value = val;
+      input.remove();
+      slider.dispatchEvent(new Event('input'));
+      slider.dispatchEvent(new Event('change'));
+    };
+    input.addEventListener('blur', finalize);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') finalize();
+    });
+  });
+  slider.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const val = defaultValue !== undefined ? defaultValue : slider.defaultValue;
+    slider.value = val;
+    slider.dispatchEvent(new Event('input'));
+    slider.dispatchEvent(new Event('change'));
+  });
+}
+
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
     item.addEventListener('click', () => selectFilter(item, elements, state));
@@ -32,6 +78,7 @@ export function initFilters(elements, state) {
     updateIntensityValue(elements);
     previewCurrentFilter(elements, state);
   });
+  enableManualInput(elements.intensitySlider, elements.intensityValue, 100);
   elements.contrastSlider.addEventListener('input', () => {
     updateContrastValue(elements);
     // previewCurrentFilter(elements, state); // Real-time preview (disabled for performance)
@@ -40,6 +87,7 @@ export function initFilters(elements, state) {
     updateContrastValue(elements);
     previewCurrentFilter(elements, state);
   });
+  enableManualInput(elements.contrastSlider, elements.contrastValue, 0);
   elements.brightnessSlider.addEventListener('input', () => {
     updateBrightnessValue(elements);
     // previewCurrentFilter(elements, state); // Real-time preview (disabled for performance)
@@ -48,6 +96,7 @@ export function initFilters(elements, state) {
     updateBrightnessValue(elements);
     previewCurrentFilter(elements, state);
   });
+  enableManualInput(elements.brightnessSlider, elements.brightnessValue, 0);
 }
 
 function setupCustomSliders(filterId, elements, state) {
@@ -95,6 +144,7 @@ function setupCustomSliders(filterId, elements, state) {
       update();
       previewCurrentFilter(elements, state);
     });
+    enableManualInput(input, valueSpan, cfg.default);
   });
 }
 
