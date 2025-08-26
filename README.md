@@ -19,7 +19,7 @@ scalabilità.
   - `confirmDialog.js`: finestra di conferma personalizzata per le azioni dell'utente.
   - `toast.js`: notifiche testuali.
   - `main.js`: punto di ingresso che inizializza tutti i moduli.
-- **template/**: script di esempio (es. `Orange & Teal.py`) per sperimentare nuovi filtri.
+- **template/**: script di esempio (es. `Orange & Teal.py`) per sperimentare nuovi filtri. Oppure script vecchi e altra roba.
 
 ## Come usare
 
