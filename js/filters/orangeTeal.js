@@ -110,7 +110,10 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
 
   const intensityFactor = intensity / 100;
   const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-  const brightnessFactor = Math.max(0, 1 + brightness / 100);
+  // Photoshop-style brightness: convert slider value (-100 to 100) to a
+  // [-255, 255] offset applied after contrast. This prevents darkening from
+  // simply scaling pixel values toward black.
+  const brightnessOffset = (brightness / 100) * 255;
 
   for (let i = 0; i < data.length; i += 4) {
     const r0 = data[i];
@@ -130,13 +133,9 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
     let g = g0 * (1 - intensityFactor) + ng * intensityFactor;
     let b = b0 * (1 - intensityFactor) + nb * intensityFactor;
 
-    r = contrastFactor * (r - 128) + 128;
-    g = contrastFactor * (g - 128) + 128;
-    b = contrastFactor * (b - 128) + 128;
-
-    r *= brightnessFactor;
-    g *= brightnessFactor;
-    b *= brightnessFactor;
+    r = contrastFactor * (r - 128) + 128 + brightnessOffset;
+    g = contrastFactor * (g - 128) + 128 + brightnessOffset;
+    b = contrastFactor * (b - 128) + 128 + brightnessOffset;
 
     data[i] = Math.max(0, Math.min(255, r));
     data[i + 1] = Math.max(0, Math.min(255, g));
