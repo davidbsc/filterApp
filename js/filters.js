@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { applyOrangeTealFilter } from './filters/orangeTeal.js';
+import { applyBlackWhiteFilter } from './filters/blackWhite.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 export function initFilters(elements, state) {
@@ -120,6 +121,24 @@ function applyFilterAdjustment(elements, state) {
     applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, {
       intensity: state.filterSettings.intensity
     });
+  } else if (state.currentFilter.id === 'black-white') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
   } else {
     state.previousSettings = null;
     closeAdjustmentPanel(elements);
@@ -155,5 +174,19 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'black-white') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, options);
   }
 }
