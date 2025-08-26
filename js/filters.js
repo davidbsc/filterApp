@@ -13,6 +13,41 @@ const sliderConfigs = {
   ]
 };
 
+function enableValueEdit(slider, valueSpan, onChange, elements, state) {
+  valueSpan.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = slider.min;
+    input.max = slider.max;
+    input.value = slider.value;
+    valueSpan.textContent = '';
+    valueSpan.appendChild(input);
+    input.focus();
+    input.select();
+    const commit = () => {
+      let val = parseInt(input.value, 10);
+      if (isNaN(val)) val = parseInt(slider.value, 10);
+      val = Math.max(parseInt(slider.min, 10), Math.min(parseInt(slider.max, 10), val));
+      slider.value = val;
+      onChange();
+      previewCurrentFilter(elements, state);
+    };
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        input.blur();
+      }
+    });
+  });
+
+  slider.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    slider.value = slider.defaultValue;
+    onChange();
+    previewCurrentFilter(elements, state);
+  });
+}
+
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
     item.addEventListener('click', () => selectFilter(item, elements, state));
@@ -48,6 +83,28 @@ export function initFilters(elements, state) {
     updateBrightnessValue(elements);
     previewCurrentFilter(elements, state);
   });
+
+  enableValueEdit(
+    elements.intensitySlider,
+    elements.intensityValue,
+    () => updateIntensityValue(elements),
+    elements,
+    state
+  );
+  enableValueEdit(
+    elements.contrastSlider,
+    elements.contrastValue,
+    () => updateContrastValue(elements),
+    elements,
+    state
+  );
+  enableValueEdit(
+    elements.brightnessSlider,
+    elements.brightnessValue,
+    () => updateBrightnessValue(elements),
+    elements,
+    state
+  );
 }
 
 function setupCustomSliders(filterId, elements, state) {
@@ -75,6 +132,7 @@ function setupCustomSliders(filterId, elements, state) {
     input.min = cfg.min;
     input.max = cfg.max;
     input.value = state.customSettings[cfg.name] ?? cfg.default;
+    input.defaultValue = cfg.default;
     input.className = 'slider';
     input.id = `${cfg.name}Slider`;
     sliderContainer.appendChild(input);
@@ -95,6 +153,7 @@ function setupCustomSliders(filterId, elements, state) {
       update();
       previewCurrentFilter(elements, state);
     });
+    enableValueEdit(input, valueSpan, update, elements, state);
   });
 }
 

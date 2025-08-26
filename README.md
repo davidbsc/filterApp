@@ -26,3 +26,7 @@ scalabilità.
 Apri `index.html` in un browser moderno e trascina un'immagine nell'area centrale.
 Seleziona un filtro dal pannello di sinistra e regola i parametri nel pannello di destra.
 Puoi scaricare l'immagine o creare un nuovo progetto dalle azioni presenti nel footer.
+
+Per impostare manualmente i valori dei cursori, fai clic sul numero accanto allo slider,
+inserisci il valore desiderato e premi Enter o clicca fuori dall'input per confermare.
+Un clic con il tasto destro sullo slider ripristina il valore di default.

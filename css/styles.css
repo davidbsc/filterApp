@@ -287,6 +287,16 @@
             font-size: 14px;
         }
 
+        .slider-value input {
+            width: 100%;
+            box-sizing: border-box;
+            background: var(--secondary-bg);
+            border: 1px solid var(--tertiary-bg);
+            color: var(--primary-text);
+            font-size: 14px;
+            text-align: right;
+        }
+
         .adjustment-actions {
             display: flex;
             gap: 10px;
