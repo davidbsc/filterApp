@@ -103,6 +103,7 @@ function applyFilterAdjustment(elements, state) {
   } else {
     state.appliedFilters.push({ ...state.currentFilter, settings: { ...state.filterSettings } });
   }
+  state.imageHistory.push(state.currentImage);
   if (state.currentFilter.id === 'orange-teal') {
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;

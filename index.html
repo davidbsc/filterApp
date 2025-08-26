@@ -158,6 +158,9 @@
         <!-- Footer -->
         <footer class="app-footer">
             <div class="footer-actions">
+                <button class="btn btn-reset" id="undoBtn">
+                    <i class="fas fa-step-backward"></i> Undo
+                </button>
                 <button class="btn btn-reset" id="resetBtn">
                     <i class="fas fa-undo"></i> Reset
                 </button>
@@ -174,6 +177,17 @@
     <div class="toast" id="toast">
         <i class="fas fa-check-circle"></i>
         <span id="toastMessage">Operation successful</span>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmOverlay">
+        <div class="modal">
+            <p id="confirmMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" id="confirmCancel">Cancel</button>
+                <button class="btn btn-apply" id="confirmOk">OK</button>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="js/main.js"></script>

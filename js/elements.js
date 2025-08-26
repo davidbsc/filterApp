@@ -15,6 +15,7 @@ export const elements = {
   brightnessSlider: document.getElementById('brightnessSlider'),
   brightnessValue: document.getElementById('brightnessValue'),
   downloadBtn: document.getElementById('downloadBtn'),
+  undoBtn: document.getElementById('undoBtn'),
   resetBtn: document.getElementById('resetBtn'),
   newProjectBtn: document.getElementById('newProjectBtn'),
   toast: document.getElementById('toast'),
