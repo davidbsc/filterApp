@@ -7,5 +7,6 @@ export const state = {
     brightness: 0
   },
   previousSettings: null,
-  appliedFilters: []
+  appliedFilters: [],
+  previewBaseImage: null
 };

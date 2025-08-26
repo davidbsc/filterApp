@@ -5,12 +5,12 @@ export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
     item.addEventListener('click', () => selectFilter(item, elements, state));
   });
-  elements.closeAdjustment.addEventListener('click', () => closeAdjustmentPanel(elements));
+  elements.closeAdjustment.addEventListener('click', () => closeAdjustmentPanel(elements, state));
   elements.cancelAdjustment.addEventListener('click', () => cancelFilterAdjustment(elements, state));
   elements.applyAdjustment.addEventListener('click', () => applyFilterAdjustment(elements, state));
-  elements.intensitySlider.addEventListener('input', () => updateIntensityValue(elements));
-  elements.contrastSlider.addEventListener('input', () => updateContrastValue(elements));
-  elements.brightnessSlider.addEventListener('input', () => updateBrightnessValue(elements));
+  elements.intensitySlider.addEventListener('input', () => updateIntensityValue(elements, state));
+  elements.contrastSlider.addEventListener('input', () => updateContrastValue(elements, state));
+  elements.brightnessSlider.addEventListener('input', () => updateBrightnessValue(elements, state));
 }
 
 function selectFilter(filterItem, elements, state) {
@@ -29,6 +29,7 @@ function selectFilter(filterItem, elements, state) {
 function openAdjustmentPanel(filterName, elements, state) {
   elements.adjustmentTitle.textContent = `${filterName} Adjustment`;
   elements.adjustmentsSidebar.classList.add('active');
+  state.previewBaseImage = state.currentImage;
   if (state.previousSettings && state.previousSettings.filterId === state.currentFilter.id) {
     elements.intensitySlider.value = state.previousSettings.intensity;
     elements.contrastSlider.value = state.previousSettings.contrast;
@@ -38,31 +39,35 @@ function openAdjustmentPanel(filterName, elements, state) {
     elements.contrastSlider.value = 0;
     elements.brightnessSlider.value = 0;
   }
-  updateIntensityValue(elements);
-  updateContrastValue(elements);
-  updateBrightnessValue(elements);
+  updateIntensityValue(elements, state);
+  updateContrastValue(elements, state);
+  updateBrightnessValue(elements, state);
 }
 
-export function closeAdjustmentPanel(elements) {
+export function closeAdjustmentPanel(elements, state) {
   elements.adjustmentsSidebar.classList.remove('active');
+  if (state.currentImage) {
+    elements.previewImage.src = state.currentImage;
+  }
+  state.previewBaseImage = null;
 }
 
 function cancelFilterAdjustment(elements, state) {
   state.previousSettings = {
     filterId: state.currentFilter.id,
-    intensity: elements.intensitySlider.value,
-    contrast: elements.contrastSlider.value,
-    brightness: elements.brightnessSlider.value
+    intensity: parseInt(elements.intensitySlider.value, 10),
+    contrast: parseInt(elements.contrastSlider.value, 10),
+    brightness: parseInt(elements.brightnessSlider.value, 10)
   };
-  closeAdjustmentPanel(elements);
+  closeAdjustmentPanel(elements, state);
   showToast('Changes remembered', 'success');
 }
 
 function applyFilterAdjustment(elements, state) {
   state.filterSettings = {
-    intensity: elements.intensitySlider.value,
-    contrast: elements.contrastSlider.value,
-    brightness: elements.brightnessSlider.value
+    intensity: parseInt(elements.intensitySlider.value, 10),
+    contrast: parseInt(elements.contrastSlider.value, 10),
+    brightness: parseInt(elements.brightnessSlider.value, 10)
   };
   const existingFilterIndex = state.appliedFilters.findIndex(f => f.id === state.currentFilter.id);
   if (existingFilterIndex !== -1) {
@@ -71,22 +76,40 @@ function applyFilterAdjustment(elements, state) {
     state.appliedFilters.push({ ...state.currentFilter, settings: { ...state.filterSettings } });
   }
   if (state.currentFilter.id === 'orange-teal') {
-    applyOrangeTealFilter(elements.previewImage);
     state.currentImage = elements.previewImage.src;
   }
   state.previousSettings = null;
-  closeAdjustmentPanel(elements);
+  closeAdjustmentPanel(elements, state);
   showToast('Filter applied successfully', 'success');
 }
 
-function updateIntensityValue(elements) {
+function updateIntensityValue(elements, state) {
   elements.intensityValue.textContent = `${elements.intensitySlider.value}%`;
+  previewCurrentFilter(elements, state);
 }
 
-function updateContrastValue(elements) {
+function updateContrastValue(elements, state) {
   elements.contrastValue.textContent = `${elements.contrastSlider.value > 0 ? '+' : ''}${elements.contrastSlider.value}%`;
+  previewCurrentFilter(elements, state);
 }
 
-function updateBrightnessValue(elements) {
+function updateBrightnessValue(elements, state) {
   elements.brightnessValue.textContent = `${elements.brightnessSlider.value > 0 ? '+' : ''}${elements.brightnessSlider.value}%`;
+  previewCurrentFilter(elements, state);
+}
+
+function previewCurrentFilter(elements, state) {
+  if (!state.previewBaseImage) return;
+  if (state.currentFilter.id === 'orange-teal') {
+    const img = new Image();
+    img.onload = () => {
+      applyOrangeTealFilter(img, {
+        intensity: parseInt(elements.intensitySlider.value, 10),
+        contrast: parseInt(elements.contrastSlider.value, 10),
+        brightness: parseInt(elements.brightnessSlider.value, 10)
+      });
+      elements.previewImage.src = img.src;
+    };
+    img.src = state.previewBaseImage;
+  }
 }
