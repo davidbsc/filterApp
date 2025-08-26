@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { applyOrangeTealFilter } from './filters/orangeTeal.js';
+import { applyBrightnessContrast } from './adjustments.js';
 
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
@@ -102,13 +103,28 @@ function applyFilterAdjustment(elements, state) {
     state.appliedFilters.push({ ...state.currentFilter, settings: { ...state.filterSettings } });
   }
   if (state.currentFilter.id === 'orange-teal') {
-    applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, state.filterSettings);
-    state.currentImage = elements.previewImage.src;
-    state.previewBaseImage = null;
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else {
+    state.previousSettings = null;
+    closeAdjustmentPanel(elements);
+    showToast('Filter applied successfully', 'success');
   }
-  state.previousSettings = null;
-  closeAdjustmentPanel(elements);
-  showToast('Filter applied successfully', 'success');
 }
 
 function updateIntensityValue(elements) {
@@ -127,9 +143,16 @@ function previewCurrentFilter(elements, state) {
   if (!state.previewBaseImage || !state.currentFilter) return;
   if (state.currentFilter.id === 'orange-teal') {
     const options = {
-      intensity: parseInt(elements.intensitySlider.value, 10),
-      contrast: parseInt(elements.contrastSlider.value, 10),
-      brightness: parseInt(elements.brightnessSlider.value, 10)
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
     };
     applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, options);
   }
