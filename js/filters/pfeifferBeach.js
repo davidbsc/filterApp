@@ -113,9 +113,7 @@ export function applyPfeifferBeachFilter(sourceImg, targetEl, options = {}) {
     let bNew = Math.max(0, Math.min(255, data[i + 2] * (1 - blend) + b * blend));
 
     // Final colour balance: add 65 yellow on the yellow/blue axis
-    const yellowShift = 65 * blend;
-    rNew = Math.max(0, Math.min(255, rNew + yellowShift));
-    gNew = Math.max(0, Math.min(255, gNew + yellowShift));
+    const yellowShift = 18;
     bNew = Math.max(0, Math.min(255, bNew - yellowShift));
 
     data[i] = rNew;
