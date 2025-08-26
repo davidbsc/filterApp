@@ -10,7 +10,8 @@ export function applyBrightnessContrast(sourceImg, targetEl, brightness = 0, con
   const data = imageData.data;
 
   const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-  const brightnessOffset = 255 * (brightness / 100);
+  //Metodo Avanzato: const brightnessOffset = 255 * (brightness / 100);
+  const brightnessOffset = brightness;
 
   for (let i = 0; i < data.length; i += 4) {
     data[i] = Math.max(0, Math.min(255, contrastFactor * (data[i] - 128) + 128 + brightnessOffset));
