@@ -85,6 +85,52 @@ export function applyCaliforniaFilter(sourceImg, targetEl, options = {}) {
     const m = v - c;
     return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
   }
+  // Additional helpers for HSL conversions used for final colour tweaks
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        default:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hslToRgb(h, s, l) {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const hh = h / 60;
+    const x = c * (1 - Math.abs(hh % 2 - 1));
+    let r1, g1, b1;
+    if (hh >= 0 && hh < 1) {
+      r1 = c; g1 = x; b1 = 0;
+    } else if (hh < 2) {
+      r1 = x; g1 = c; b1 = 0;
+    } else if (hh < 3) {
+      r1 = 0; g1 = c; b1 = x;
+    } else if (hh < 4) {
+      r1 = 0; g1 = x; b1 = c;
+    } else if (hh < 5) {
+      r1 = x; g1 = 0; b1 = c;
+    } else {
+      r1 = c; g1 = 0; b1 = x;
+    }
+    const m = l - c / 2;
+    return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
+  }
 
   // Iterate through each pixel and apply the transformation
   for (let i = 0; i < data.length; i += 4) {
@@ -109,6 +155,15 @@ export function applyCaliforniaFilter(sourceImg, targetEl, options = {}) {
     r = (r - 128) * (1 + contrastBoost) + 128;
     g = (g - 128) * (1 + contrastBoost) + 128;
     b = (b - 128) * (1 + contrastBoost) + 128;
+
+    // Hue adjustment in HSL space (+11 degrees makes the image slightly more blue)
+    let [hh, ss, ll] = rgbToHsl(r, g, b);
+    hh = (hh + 11) % 360;
+    [r, g, b] = hslToRgb(hh, ss, ll);
+
+    // Colour balance tweaks: push towards cyan and blue
+    r = r - 17; // cyan vs red
+    b = b + 13; // blue vs yellow
 
     // Linearly interpolate between original pixel and fully adjusted
     // pixel based on intensity blend.  This prevents abrupt jumps if
