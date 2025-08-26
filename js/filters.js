@@ -1,5 +1,6 @@
 import { showToast } from './toast.js';
 import { applyOrangeTealFilter } from './filters/orangeTeal.js';
+import { applyBrightnessContrast } from './adjustments.js';
 
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
@@ -102,9 +103,23 @@ function applyFilterAdjustment(elements, state) {
     state.appliedFilters.push({ ...state.currentFilter, settings: { ...state.filterSettings } });
   }
   if (state.currentFilter.id === 'orange-teal') {
-    applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, state.filterSettings);
-    state.currentImage = elements.previewImage.src;
-    state.previewBaseImage = null;
+    applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      applyBrightnessContrast(tempImg, elements.previewImage, {
+        contrast: state.filterSettings.contrast,
+        brightness: state.filterSettings.brightness
+      });
+      state.currentImage = elements.previewImage.src;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    tempImg.src = elements.previewImage.src;
+    return;
   }
   state.previousSettings = null;
   closeAdjustmentPanel(elements);
@@ -127,10 +142,16 @@ function previewCurrentFilter(elements, state) {
   if (!state.previewBaseImage || !state.currentFilter) return;
   if (state.currentFilter.id === 'orange-teal') {
     const options = {
-      intensity: parseInt(elements.intensitySlider.value, 10),
-      contrast: parseInt(elements.contrastSlider.value, 10),
-      brightness: parseInt(elements.brightnessSlider.value, 10)
+      intensity: parseInt(elements.intensitySlider.value, 10)
     };
     applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, options);
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      applyBrightnessContrast(tempImg, elements.previewImage, {
+        contrast: parseInt(elements.contrastSlider.value, 10),
+        brightness: parseInt(elements.brightnessSlider.value, 10)
+      });
+    };
+    tempImg.src = elements.previewImage.src;
   }
 }
