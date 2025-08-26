@@ -6,6 +6,8 @@ import { applyVintageFilter } from './filters/vintage.js';
 import { applySepiaFilter } from './filters/sepia.js';
 import { applyCoolToneFilter } from './filters/coolTone.js';
 import { applyBlurFilter } from './filters/blur.js';
+import { applySharpenFilter } from './filters/sharpen.js';
+import { applyVignetteFilter } from './filters/vignette.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
@@ -341,6 +343,42 @@ function applyFilterAdjustment(elements, state) {
     applyBlurFilter(state.previewBaseImage, elements.previewImage, {
       intensity: state.filterSettings.intensity
     });
+  } else if (state.currentFilter.id === 'sharpen') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applySharpenFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else if (state.currentFilter.id === 'vignette') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyVignetteFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
   } else if (state.currentFilter.id === 'vintage') {
       elements.previewImage.onload = () => {
         elements.previewImage.onload = null;
@@ -468,6 +506,34 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyBlurFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'sharpen') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applySharpenFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'vignette') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyVignetteFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
       const options = {
         intensity: parseInt(elements.intensitySlider.value, 10),
