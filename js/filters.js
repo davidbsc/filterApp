@@ -4,6 +4,70 @@ import { applyBlackWhiteFilter } from './filters/blackWhite.js';
 import { applyVintageFilter } from './filters/vintage.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
+const customSliderConfigs = {
+  vintage: [
+    { id: 'alpha', label: 'Alpha', min: -100, max: 100, default: 0 },
+    { id: 'beta', label: 'Beta', min: -50, max: 50, default: 0 },
+    { id: 'gamma', label: 'Gamma', min: -50, max: 50, default: 0 },
+    { id: 'delta', label: 'Delta', min: -50, max: 50, default: 0 }
+  ]
+};
+
+function renderCustomSliders(filterId, elements, state) {
+  elements.customSliders.innerHTML = '';
+  const configs = customSliderConfigs[filterId];
+  if (!configs) return;
+  const prev = state.previousSettings && state.previousSettings.filterId === filterId ? state.previousSettings : null;
+  configs.forEach(cfg => {
+    const container = document.createElement('div');
+    container.className = 'intensity-control';
+    const label = document.createElement('div');
+    label.className = 'control-label';
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = cfg.label;
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'slider-value';
+    valueSpan.id = `${cfg.id}Value`;
+    const initial = prev && typeof prev[cfg.id] !== 'undefined' ? prev[cfg.id] : cfg.default;
+    valueSpan.textContent = initial;
+    label.appendChild(nameSpan);
+    label.appendChild(valueSpan);
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = 'slider-container';
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = cfg.min;
+    input.max = cfg.max;
+    input.value = initial;
+    input.className = 'slider';
+    input.id = `${cfg.id}Slider`;
+    sliderContainer.appendChild(input);
+    container.appendChild(label);
+    container.appendChild(sliderContainer);
+    elements.customSliders.appendChild(container);
+    input.addEventListener('input', () => {
+      document.getElementById(`${cfg.id}Value`).textContent = input.value;
+    });
+    input.addEventListener('change', () => {
+      document.getElementById(`${cfg.id}Value`).textContent = input.value;
+      previewCurrentFilter(elements, state);
+    });
+  });
+}
+
+function getCustomSliderValues(filterId) {
+  const configs = customSliderConfigs[filterId];
+  const values = {};
+  if (!configs) return values;
+  configs.forEach(cfg => {
+    const slider = document.getElementById(`${cfg.id}Slider`);
+    if (slider) {
+      values[cfg.id] = parseInt(slider.value, 10);
+    }
+  });
+  return values;
+}
+
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
     item.addEventListener('click', () => selectFilter(item, elements, state));
@@ -71,6 +135,8 @@ function openAdjustmentPanel(filterName, elements, state) {
   updateContrastValue(elements);
   updateBrightnessValue(elements);
 
+  renderCustomSliders(state.currentFilter.id, elements, state);
+
   state.previewBaseImage = new Image();
   state.previewBaseImage.src = state.currentImage;
   state.previewBaseImage.onload = () => previewCurrentFilter(elements, state);
@@ -79,6 +145,7 @@ function openAdjustmentPanel(filterName, elements, state) {
 export function closeAdjustmentPanel(elements) {
   elements.adjustmentsSidebar.classList.remove('active');
   elements.downloadBtn.style.display = 'flex';
+  elements.customSliders.innerHTML = '';
 }
 
 function cancelFilterAdjustment(elements, state) {
@@ -86,7 +153,8 @@ function cancelFilterAdjustment(elements, state) {
     filterId: state.currentFilter.id,
     intensity: elements.intensitySlider.value,
     contrast: elements.contrastSlider.value,
-    brightness: elements.brightnessSlider.value
+    brightness: elements.brightnessSlider.value,
+    ...getCustomSliderValues(state.currentFilter.id)
   };
   elements.previewImage.src = state.previewBaseImage.src;
   state.previewBaseImage = null;
@@ -98,7 +166,8 @@ function applyFilterAdjustment(elements, state) {
   state.filterSettings = {
     intensity: parseInt(elements.intensitySlider.value, 10),
     contrast: parseInt(elements.contrastSlider.value, 10),
-    brightness: parseInt(elements.brightnessSlider.value, 10)
+    brightness: parseInt(elements.brightnessSlider.value, 10),
+    ...getCustomSliderValues(state.currentFilter.id)
   };
   const existingFilterIndex = state.appliedFilters.findIndex(f => f.id === state.currentFilter.id);
   if (existingFilterIndex !== -1) {
@@ -159,7 +228,8 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyVintageFilter(state.previewBaseImage, elements.previewImage, {
-      intensity: state.filterSettings.intensity
+      intensity: state.filterSettings.intensity,
+      ...getCustomSliderValues(state.currentFilter.id)
     });
   } else {
     state.previousSettings = null;
@@ -212,7 +282,8 @@ function previewCurrentFilter(elements, state) {
     applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
     const options = {
-      intensity: parseInt(elements.intensitySlider.value, 10)
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      ...getCustomSliderValues(state.currentFilter.id)
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;

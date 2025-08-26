@@ -61,7 +61,7 @@ function hsvToRgb(h, s, v) {
 }
 
 export function applyVintageFilter(sourceImg, targetEl, options = {}) {
-  const { intensity = 100 } = options;
+  const { intensity = 100, alpha = 0, beta = 0, gamma = 0, delta = 0 } = options;
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -78,7 +78,7 @@ export function applyVintageFilter(sourceImg, targetEl, options = {}) {
 
   // Step 2.2: decrease red channel (Cyan +100)
   for (let i = 0; i < len; i += 4) {
-    dupPixels[i] = Math.max(0, dupPixels[i] - 100);
+    dupPixels[i] = Math.max(0, dupPixels[i] - (100 + alpha));
   }
   // Step 2.3: invert colors
   for (let i = 0; i < len; i += 4) {
@@ -105,9 +105,9 @@ export function applyVintageFilter(sourceImg, targetEl, options = {}) {
   }
 
   // Step 2.5: saturation, brightness, contrast +13%
-  const satFactor = 1.13;
-  const brightFactor = 1.13;
-  const contrastFactor = 1.13;
+  const satFactor = 1.13 + beta / 100;
+  const brightFactor = 1.13 + gamma / 100;
+  const contrastFactor = 1.13 + delta / 100;
   for (let i = 0; i < len; i += 4) {
     let r = fusedPixels[i];
     let g = fusedPixels[i + 1];
