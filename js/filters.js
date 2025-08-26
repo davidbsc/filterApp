@@ -3,6 +3,9 @@ import { applyOrangeTealFilter } from './filters/orangeTeal.js';
 import { applyBlackWhiteFilter } from './filters/blackWhite.js';
 import { applyHighContrastFilter } from './filters/highContrast.js';
 import { applyVintageFilter } from './filters/vintage.js';
+import { applySepiaFilter } from './filters/sepia.js';
+import { applyCoolToneFilter } from './filters/coolTone.js';
+import { applyBlurFilter } from './filters/blur.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
@@ -266,25 +269,79 @@ function applyFilterAdjustment(elements, state) {
     applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, {
       intensity: state.filterSettings.intensity
     });
-    } else if (state.currentFilter.id === 'high-contrast') {
-      elements.previewImage.onload = () => {
-        elements.previewImage.onload = null;
-        const result = applyBrightnessContrast(
-          elements.previewImage,
-          elements.previewImage,
-          state.filterSettings.brightness,
-          state.filterSettings.contrast
-        );
-        state.currentImage = result;
-        state.previewBaseImage = null;
-        state.previousSettings = null;
-        closeAdjustmentPanel(elements);
-        showToast('Filter applied successfully', 'success');
-      };
-      applyHighContrastFilter(state.previewBaseImage, elements.previewImage, {
-        intensity: state.filterSettings.intensity
-      });
-    } else if (state.currentFilter.id === 'vintage') {
+  } else if (state.currentFilter.id === 'high-contrast') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyHighContrastFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else if (state.currentFilter.id === 'sepia') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applySepiaFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else if (state.currentFilter.id === 'cool-tone') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyCoolToneFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else if (state.currentFilter.id === 'blur') {
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        state.filterSettings.brightness,
+        state.filterSettings.contrast
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyBlurFilter(state.previewBaseImage, elements.previewImage, {
+      intensity: state.filterSettings.intensity
+    });
+  } else if (state.currentFilter.id === 'vintage') {
       elements.previewImage.onload = () => {
         elements.previewImage.onload = null;
         const result = applyBrightnessContrast(
@@ -355,21 +412,63 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyBlackWhiteFilter(state.previewBaseImage, elements.previewImage, options);
-    } else if (state.currentFilter.id === 'high-contrast') {
-      const options = {
-        intensity: parseInt(elements.intensitySlider.value, 10)
-      };
-      elements.previewImage.onload = () => {
-        elements.previewImage.onload = null;
-        applyBrightnessContrast(
-          elements.previewImage,
-          elements.previewImage,
-          parseInt(elements.brightnessSlider.value, 10),
-          parseInt(elements.contrastSlider.value, 10)
-        );
-      };
-      applyHighContrastFilter(state.previewBaseImage, elements.previewImage, options);
-    } else if (state.currentFilter.id === 'vintage') {
+  } else if (state.currentFilter.id === 'high-contrast') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyHighContrastFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'sepia') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applySepiaFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'cool-tone') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyCoolToneFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'blur') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyBlurFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'vintage') {
       const options = {
         intensity: parseInt(elements.intensitySlider.value, 10),
         alpha: state.customSettings.alpha || 0,
