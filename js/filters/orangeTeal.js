@@ -94,7 +94,10 @@ function hsvToRgb(h, s, v) {
   return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
 }
 
-export function applyOrangeTealFilter(imgEl) {
+export function applyOrangeTealFilter(
+  imgEl,
+  { intensity = 1, contrast = 0, brightness = 0 } = {}
+) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   canvas.width = imgEl.naturalWidth;
@@ -102,27 +105,36 @@ export function applyOrangeTealFilter(imgEl) {
   ctx.drawImage(imgEl, 0, 0);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
+  const contrastAdj = (contrast / 100) * 255;
+  const contrastFactor = (259 * (contrastAdj + 255)) / (255 * (259 - contrastAdj));
+  const brightnessOffset = (brightness / 100) * 255;
 
   for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
+    const rOrig = data[i];
+    const gOrig = data[i + 1];
+    const bOrig = data[i + 2];
 
-    let [h, s, v] = rgbToHsv(r, g, b); // h:0-360, s:0-1, v:0-1
+    let [h, s, v] = rgbToHsv(rOrig, gOrig, bOrig); // h:0-360, s:0-1, v:0-1
     const hIdx = Math.floor(h / 2); // 0-179
     const newHueIdx = HUE_LUT[hIdx];
     const satMult = SAT_LUT[newHueIdx];
     const newHue = newHueIdx * 2; // back to 0-360
     const newSat = Math.min(1, s * satMult);
     const newVal = smoothContrast(v);
-    const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
+    let [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
 
-    data[i] = nr;
-    data[i + 1] = ng;
-    data[i + 2] = nb;
+    // Apply brightness and contrast adjustments
+    nr = contrastFactor * (nr - 128) + 128 + brightnessOffset;
+    ng = contrastFactor * (ng - 128) + 128 + brightnessOffset;
+    nb = contrastFactor * (nb - 128) + 128 + brightnessOffset;
+
+    // Blend with original based on intensity
+    data[i] = rOrig * (1 - intensity) + nr * intensity;
+    data[i + 1] = gOrig * (1 - intensity) + ng * intensity;
+    data[i + 2] = bOrig * (1 - intensity) + nb * intensity;
   }
 
   ctx.putImageData(imageData, 0, 0);
-  imgEl.src = canvas.toDataURL();
+  return canvas.toDataURL();
 }
 
