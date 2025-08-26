@@ -23,6 +23,7 @@ function resetImage(elements, state) {
   state.appliedFilters = [];
   elements.filterItems.forEach(item => item.classList.remove('active'));
   state.currentFilter = null;
+  state.previewBaseImage = null;
   closeAdjustmentPanel(elements);
   showToast('Image reset successfully', 'success');
 }
@@ -32,6 +33,7 @@ function newProject(elements, state) {
   state.currentFilter = null;
   state.appliedFilters = [];
   state.previousSettings = null;
+  state.previewBaseImage = null;
 
   elements.previewImage.style.display = 'none';
   elements.dropArea.style.display = 'flex';

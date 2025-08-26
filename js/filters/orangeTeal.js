@@ -94,35 +94,52 @@ function hsvToRgb(h, s, v) {
   return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
 }
 
-export function applyOrangeTealFilter(imgEl) {
+export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
+  const { intensity = 100, contrast = 0, brightness = 0 } = options;
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = imgEl.naturalWidth;
-  canvas.height = imgEl.naturalHeight;
-  ctx.drawImage(imgEl, 0, 0);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const width = sourceImg.naturalWidth || sourceImg.width;
+  const height = sourceImg.naturalHeight || sourceImg.height;
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(sourceImg, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
+  const intensityFactor = intensity / 100;
+  const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+  const brightnessOffset = (brightness / 100) * 255;
 
-    let [h, s, v] = rgbToHsv(r, g, b); // h:0-360, s:0-1, v:0-1
-    const hIdx = Math.floor(h / 2); // 0-179
+  for (let i = 0; i < data.length; i += 4) {
+    const r0 = data[i];
+    const g0 = data[i + 1];
+    const b0 = data[i + 2];
+
+    let [h, s, v] = rgbToHsv(r0, g0, b0);
+    const hIdx = Math.floor(h / 2);
     const newHueIdx = HUE_LUT[hIdx];
     const satMult = SAT_LUT[newHueIdx];
-    const newHue = newHueIdx * 2; // back to 0-360
+    const newHue = newHueIdx * 2;
     const newSat = Math.min(1, s * satMult);
     const newVal = smoothContrast(v);
     const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
 
-    data[i] = nr;
-    data[i + 1] = ng;
-    data[i + 2] = nb;
+    let r = r0 * (1 - intensityFactor) + nr * intensityFactor;
+    let g = g0 * (1 - intensityFactor) + ng * intensityFactor;
+    let b = b0 * (1 - intensityFactor) + nb * intensityFactor;
+
+    r = contrastFactor * (r - 128) + 128 + brightnessOffset;
+    g = contrastFactor * (g - 128) + 128 + brightnessOffset;
+    b = contrastFactor * (b - 128) + 128 + brightnessOffset;
+
+    data[i] = Math.max(0, Math.min(255, r));
+    data[i + 1] = Math.max(0, Math.min(255, g));
+    data[i + 2] = Math.max(0, Math.min(255, b));
   }
 
   ctx.putImageData(imageData, 0, 0);
-  imgEl.src = canvas.toDataURL();
+  targetEl.src = canvas.toDataURL();
 }
 

@@ -1,5 +1,6 @@
 export const state = {
   currentImage: null,
+  previewBaseImage: null,
   currentFilter: null,
   filterSettings: {
     intensity: 100,
