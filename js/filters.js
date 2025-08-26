@@ -1,4 +1,5 @@
 import { showToast } from './toast.js';
+import { applyOrangeTealFilter } from './filters/orangeTeal.js';
 
 export function initFilters(elements, state) {
   elements.filterItems.forEach(item => {
@@ -68,6 +69,10 @@ function applyFilterAdjustment(elements, state) {
     state.appliedFilters[existingFilterIndex] = { ...state.currentFilter, settings: { ...state.filterSettings } };
   } else {
     state.appliedFilters.push({ ...state.currentFilter, settings: { ...state.filterSettings } });
+  }
+  if (state.currentFilter.id === 'orange-teal') {
+    applyOrangeTealFilter(elements.previewImage);
+    state.currentImage = elements.previewImage.src;
   }
   state.previousSettings = null;
   closeAdjustmentPanel(elements);

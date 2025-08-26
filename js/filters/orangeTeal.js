@@ -1,0 +1,128 @@
+// Orange & Teal filter converted from Python implementation
+// Applies a smooth orange and teal color grading to an image element
+
+// Build lookup tables for hue shift and saturation boost
+function buildOrangeTealLUT(
+  sigmaH = 15,
+  warmH = 15,
+  coolH = 90,
+  satBoostWarm = 1.45,
+  satBoostCool = 1.20
+) {
+  const hueLut = new Array(180).fill(0);
+  const satLut = new Array(180).fill(1.0);
+  const twoSigma2 = 2 * sigmaH * sigmaH;
+
+  for (let h = 0; h < 180; h++) {
+    const dw = Math.min(Math.abs(h - warmH), 180 - Math.abs(h - warmH));
+    const dc = Math.min(Math.abs(h - coolH), 180 - Math.abs(h - coolH));
+
+    const wWarm = Math.exp(-(dw * dw) / twoSigma2);
+    const wCool = Math.exp(-(dc * dc) / twoSigma2);
+
+    if (wWarm + wCool < 1e-6) {
+      hueLut[h] = h;
+      satLut[h] = 1.0;
+    } else {
+      const wSum = wWarm + wCool;
+      const wWarmNorm = wWarm / wSum;
+      const wCoolNorm = 1.0 - wWarmNorm;
+
+      hueLut[h] = Math.round(wWarmNorm * warmH + wCoolNorm * coolH) % 180;
+      satLut[h] = wWarmNorm * satBoostWarm + wCoolNorm * satBoostCool;
+    }
+  }
+
+  return { hueLut, satLut };
+}
+
+const { hueLut: HUE_LUT, satLut: SAT_LUT } = buildOrangeTealLUT();
+
+// Smooth contrast adjustment similar to the Python _smooth_contrast
+function smoothContrast(v, midBoost = 1.05, shadowMul = 0.93, hiMul = 1.06) {
+  const t = v; // v expected in range 0-1
+  const smooth = t * t * (3.0 - 2.0 * t);
+  const boost = shadowMul + (hiMul - shadowMul) * smooth;
+  let vNew = v * boost * midBoost;
+  return Math.min(1, Math.max(0, vNew));
+}
+
+function rgbToHsv(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, v = max;
+  const d = max - min;
+  s = max === 0 ? 0 : d / max;
+  if (max === min) {
+    h = 0; // achromatic
+  } else {
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h *= 60;
+  }
+  return [h, s, v];
+}
+
+function hsvToRgb(h, s, v) {
+  const c = v * s;
+  const hh = h / 60;
+  const x = c * (1 - Math.abs(hh % 2 - 1));
+  let r1, g1, b1;
+  if (hh >= 0 && hh < 1) {
+    r1 = c; g1 = x; b1 = 0;
+  } else if (hh < 2) {
+    r1 = x; g1 = c; b1 = 0;
+  } else if (hh < 3) {
+    r1 = 0; g1 = c; b1 = x;
+  } else if (hh < 4) {
+    r1 = 0; g1 = x; b1 = c;
+  } else if (hh < 5) {
+    r1 = x; g1 = 0; b1 = c;
+  } else {
+    r1 = c; g1 = 0; b1 = x;
+  }
+  const m = v - c;
+  return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
+}
+
+export function applyOrangeTealFilter(imgEl) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = imgEl.naturalWidth;
+  canvas.height = imgEl.naturalHeight;
+  ctx.drawImage(imgEl, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    let [h, s, v] = rgbToHsv(r, g, b); // h:0-360, s:0-1, v:0-1
+    const hIdx = Math.floor(h / 2); // 0-179
+    const newHueIdx = HUE_LUT[hIdx];
+    const satMult = SAT_LUT[newHueIdx];
+    const newHue = newHueIdx * 2; // back to 0-360
+    const newSat = Math.min(1, s * satMult);
+    const newVal = smoothContrast(v);
+    const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
+
+    data[i] = nr;
+    data[i + 1] = ng;
+    data[i + 2] = nb;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  imgEl.src = canvas.toDataURL();
+}
+
