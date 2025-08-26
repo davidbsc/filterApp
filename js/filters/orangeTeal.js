@@ -110,7 +110,7 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
 
   const intensityFactor = intensity / 100;
   const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-  const brightnessOffset = (brightness / 100) * 255;
+  const brightnessFactor = Math.max(0, 1 + brightness / 100);
 
   for (let i = 0; i < data.length; i += 4) {
     const r0 = data[i];
@@ -130,9 +130,13 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
     let g = g0 * (1 - intensityFactor) + ng * intensityFactor;
     let b = b0 * (1 - intensityFactor) + nb * intensityFactor;
 
-    r = contrastFactor * (r - 128) + 128 + brightnessOffset;
-    g = contrastFactor * (g - 128) + 128 + brightnessOffset;
-    b = contrastFactor * (b - 128) + 128 + brightnessOffset;
+    r = contrastFactor * (r - 128) + 128;
+    g = contrastFactor * (g - 128) + 128;
+    b = contrastFactor * (b - 128) + 128;
+
+    r *= brightnessFactor;
+    g *= brightnessFactor;
+    b *= brightnessFactor;
 
     data[i] = Math.max(0, Math.min(255, r));
     data[i + 1] = Math.max(0, Math.min(255, g));
