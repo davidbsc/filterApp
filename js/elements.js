@@ -1,0 +1,22 @@
+export const elements = {
+  dropArea: document.getElementById('dropArea'),
+  fileInput: document.getElementById('fileInput'),
+  previewImage: document.getElementById('previewImage'),
+  adjustmentsSidebar: document.getElementById('adjustmentsSidebar'),
+  filterItems: document.querySelectorAll('.filter-item'),
+  closeAdjustment: document.getElementById('closeAdjustment'),
+  cancelAdjustment: document.getElementById('cancelAdjustment'),
+  applyAdjustment: document.getElementById('applyAdjustment'),
+  adjustmentTitle: document.getElementById('adjustmentTitle'),
+  intensitySlider: document.getElementById('intensitySlider'),
+  intensityValue: document.getElementById('intensityValue'),
+  contrastSlider: document.getElementById('contrastSlider'),
+  contrastValue: document.getElementById('contrastValue'),
+  brightnessSlider: document.getElementById('brightnessSlider'),
+  brightnessValue: document.getElementById('brightnessValue'),
+  downloadBtn: document.getElementById('downloadBtn'),
+  resetBtn: document.getElementById('resetBtn'),
+  newProjectBtn: document.getElementById('newProjectBtn'),
+  toast: document.getElementById('toast'),
+  toastMessage: document.getElementById('toastMessage')
+};
