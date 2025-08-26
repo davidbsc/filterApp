@@ -234,6 +234,12 @@
             margin-bottom: 25px;
         }
 
+        #customSliders {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
         .control-label {
             display: flex;
             justify-content: space-between;
