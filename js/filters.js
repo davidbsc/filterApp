@@ -8,6 +8,9 @@ import { applyCoolToneFilter } from './filters/coolTone.js';
 import { applyBlurFilter } from './filters/blur.js';
 import { applySharpenFilter } from './filters/sharpen.js';
 import { applyVignetteFilter } from './filters/vignette.js';
+import { applyCaliforniaFilter } from './filters/california.js';
+import { applyGoldenHillsFilter } from './filters/goldenHills.js';
+import { applyPfeifferBeachFilter } from './filters/pfeifferBeach.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
@@ -379,6 +382,48 @@ function applyFilterAdjustment(elements, state) {
     applyVignetteFilter(state.previewBaseImage, elements.previewImage, {
       intensity: state.filterSettings.intensity
     });
+  } else if (state.currentFilter.id === 'california') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyCaliforniaFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'golden-hills') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyGoldenHillsFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'pfeiffer-beach') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
       elements.previewImage.onload = () => {
         elements.previewImage.onload = null;
@@ -534,6 +579,48 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyVignetteFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'california') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyCaliforniaFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'golden-hills') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyGoldenHillsFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'pfeiffer-beach') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10)
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
       const options = {
         intensity: parseInt(elements.intensitySlider.value, 10),
