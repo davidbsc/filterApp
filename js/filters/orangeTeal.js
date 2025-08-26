@@ -94,7 +94,10 @@ function hsvToRgb(h, s, v) {
   return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
 }
 
-export function applyOrangeTealFilter(imgEl) {
+export function applyOrangeTealFilter(
+  imgEl,
+  { intensity = 1, contrast = 0, brightness = 0 } = {}
+) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   canvas.width = imgEl.naturalWidth;
@@ -103,10 +106,14 @@ export function applyOrangeTealFilter(imgEl) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
 
+  const c = contrast * 2.55;
+  const contrastFactor = (259 * (c + 255)) / (255 * (259 - c));
+  const bAdj = brightness * 2.55;
+
   for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
 
     let [h, s, v] = rgbToHsv(r, g, b); // h:0-360, s:0-1, v:0-1
     const hIdx = Math.floor(h / 2); // 0-179
@@ -115,11 +122,27 @@ export function applyOrangeTealFilter(imgEl) {
     const newHue = newHueIdx * 2; // back to 0-360
     const newSat = Math.min(1, s * satMult);
     const newVal = smoothContrast(v);
-    const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
+    let [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);
 
-    data[i] = nr;
-    data[i + 1] = ng;
-    data[i + 2] = nb;
+    // blend with original based on intensity (0-1)
+    nr = r * (1 - intensity) + nr * intensity;
+    ng = g * (1 - intensity) + ng * intensity;
+    nb = b * (1 - intensity) + nb * intensity;
+
+    // apply contrast
+    nr = contrastFactor * (nr - 128) + 128;
+    ng = contrastFactor * (ng - 128) + 128;
+    nb = contrastFactor * (nb - 128) + 128;
+
+    // apply brightness
+    nr += bAdj;
+    ng += bAdj;
+    nb += bAdj;
+
+    // clamp to [0,255]
+    data[i] = Math.max(0, Math.min(255, nr));
+    data[i + 1] = Math.max(0, Math.min(255, ng));
+    data[i + 2] = Math.max(0, Math.min(255, nb));
   }
 
   ctx.putImageData(imageData, 0, 0);
