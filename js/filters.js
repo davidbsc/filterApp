@@ -14,13 +14,25 @@ export function initFilters(elements, state) {
   elements.applyAdjustment.addEventListener('click', () => applyFilterAdjustment(elements, state));
   elements.intensitySlider.addEventListener('input', () => {
     updateIntensityValue(elements);
+    // previewCurrentFilter(elements, state); // Real-time preview (disabled for performance)
+  });
+  elements.intensitySlider.addEventListener('change', () => {
+    updateIntensityValue(elements);
     previewCurrentFilter(elements, state);
   });
   elements.contrastSlider.addEventListener('input', () => {
     updateContrastValue(elements);
+    // previewCurrentFilter(elements, state); // Real-time preview (disabled for performance)
+  });
+  elements.contrastSlider.addEventListener('change', () => {
+    updateContrastValue(elements);
     previewCurrentFilter(elements, state);
   });
   elements.brightnessSlider.addEventListener('input', () => {
+    updateBrightnessValue(elements);
+    // previewCurrentFilter(elements, state); // Real-time preview (disabled for performance)
+  });
+  elements.brightnessSlider.addEventListener('change', () => {
     updateBrightnessValue(elements);
     previewCurrentFilter(elements, state);
   });
