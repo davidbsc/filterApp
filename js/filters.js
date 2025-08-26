@@ -92,6 +92,7 @@ function cancelFilterAdjustment(elements, state) {
 }
 
 function applyFilterAdjustment(elements, state) {
+  state.history.push(state.currentImage);
   state.filterSettings = {
     intensity: parseInt(elements.intensitySlider.value, 10),
     contrast: parseInt(elements.contrastSlider.value, 10),

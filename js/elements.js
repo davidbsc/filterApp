@@ -16,7 +16,12 @@ export const elements = {
   brightnessValue: document.getElementById('brightnessValue'),
   downloadBtn: document.getElementById('downloadBtn'),
   resetBtn: document.getElementById('resetBtn'),
+  undoBtn: document.getElementById('undoBtn'),
   newProjectBtn: document.getElementById('newProjectBtn'),
   toast: document.getElementById('toast'),
-  toastMessage: document.getElementById('toastMessage')
+  toastMessage: document.getElementById('toastMessage'),
+  confirmModal: document.getElementById('confirmModal'),
+  confirmMessage: document.getElementById('confirmMessage'),
+  confirmAccept: document.getElementById('confirmAccept'),
+  confirmCancel: document.getElementById('confirmCancel')
 };

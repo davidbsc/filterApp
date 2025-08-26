@@ -1,5 +1,6 @@
 export const state = {
   currentImage: null,
+  originalImage: null,
   previewBaseImage: null,
   currentFilter: null,
   filterSettings: {
@@ -8,5 +9,6 @@ export const state = {
     brightness: 0
   },
   previousSettings: null,
-  appliedFilters: []
+  appliedFilters: [],
+  history: []
 };

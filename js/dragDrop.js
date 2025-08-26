@@ -41,6 +41,9 @@ export function initDragAndDrop(elements, state) {
     const reader = new FileReader();
     reader.onload = function(e) {
       state.currentImage = e.target.result;
+      state.originalImage = e.target.result;
+      state.appliedFilters = [];
+      state.history = [];
       elements.previewImage.src = state.currentImage;
       elements.previewImage.style.display = 'block';
       elements.dropArea.style.display = 'none';

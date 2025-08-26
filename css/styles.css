@@ -353,6 +353,16 @@
             background-color: var(--tertiary-bg);
         }
 
+        .btn-undo {
+            background-color: transparent;
+            color: var(--secondary-text);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-undo:hover {
+            background-color: var(--tertiary-bg);
+        }
+
         /* Toast Notification */
         .toast {
             position: fixed;
@@ -386,6 +396,68 @@
 
         .toast.warning {
             background-color: var(--warning-color);
+        }
+
+        /* Confirmation Modal */
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .confirm-modal.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .confirm-content {
+            background-color: var(--secondary-bg);
+            padding: 20px 30px;
+            border-radius: 8px;
+            text-align: center;
+            color: var(--primary-text);
+            min-width: 280px;
+        }
+
+        .confirm-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .confirm-actions .confirm-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .confirm-actions .confirm-btn#confirmAccept {
+            background-color: var(--success-color);
+        }
+
+        .confirm-actions .confirm-btn#confirmAccept:hover {
+            background-color: #3d8b40;
+        }
+
+        .confirm-actions .confirm-btn.cancel {
+            background-color: var(--danger-color);
+        }
+
+        .confirm-actions .confirm-btn.cancel:hover {
+            background-color: #c23b30;
         }
 
         /* Responsive Design */
