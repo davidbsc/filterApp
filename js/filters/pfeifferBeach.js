@@ -2,14 +2,20 @@ export function applyPfeifferBeachFilter(sourceImg, targetEl, options = {}) {
   /**
    * Pfeiffer Beach filter
    *
-   * This effect produces a soft pastel look with a gentle purple tint,
-   * reminiscent of retro film stocks like those found in Retrica.  It
-   * lifts the shadows, slightly reduces saturation and overlays a
-   * magenta/blue wash across the frame.  The `intensity` option
-   * controls the strength of the effect; at zero the image is
-   * unchanged while at 100 the full vintage pastel palette is used.
+   * This effect is inspired by the "Bazar" preset found in popular
+   * photo‑editing applications.  The goal is to make colours pop by
+   * gently increasing brightness and saturation while warming up the
+   * overall tone.  A slight contrast boost is also applied so the
+   * darkest and brightest portions of the picture feel more defined.
+   *
+   * The `intensity` option controls how strongly the filter is applied.
+   * At 0 the image will remain unchanged.  At 100 the full effect is
+   * used.  Intermediate values linearly interpolate between the
+   * unmodified pixel and its transformed counterpart.
    */
+
   const { intensity = 100 } = options;
+  // Early exit if intensity is zero
   const blend = Math.max(0, Math.min(1, intensity / 100));
 
   const canvas = document.createElement('canvas');
@@ -23,7 +29,17 @@ export function applyPfeifferBeachFilter(sourceImg, targetEl, options = {}) {
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  // Helper conversions between RGB and HSV
+  // Pre‑compute some factors.  These numbers were chosen based on
+  // empirical experimentation against the provided reference image.
+  const satBoost = 0.25 * blend;     // increase saturation by up to 25%
+  const brightBoost = 0.15 * blend;  // increase value (brightness) by up to 15%
+  const contrastBoost = 0.15 * blend;// increase contrast by up to 15%
+  const redShift = 15 * blend;       // warm up the highlights
+  const greenShift = 5 * blend;
+  const blueShift = 0;
+
+  // Helper functions to convert between RGB and HSV.  These are
+  // duplicated here to avoid pulling in external dependencies.
   function rgbToHsv(r, g, b) {
     r /= 255; g /= 255; b /= 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -69,58 +85,95 @@ export function applyPfeifferBeachFilter(sourceImg, targetEl, options = {}) {
     const m = v - c;
     return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
   }
+  // Additional helpers for HSL conversions used for final colour tweaks
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        default:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h *= 60;
+    }
+    return [h, s, l];
+  }
+  function hslToRgb(h, s, l) {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const hh = h / 60;
+    const x = c * (1 - Math.abs(hh % 2 - 1));
+    let r1, g1, b1;
+    if (hh >= 0 && hh < 1) {
+      r1 = c; g1 = x; b1 = 0;
+    } else if (hh < 2) {
+      r1 = x; g1 = c; b1 = 0;
+    } else if (hh < 3) {
+      r1 = 0; g1 = c; b1 = x;
+    } else if (hh < 4) {
+      r1 = 0; g1 = x; b1 = c;
+    } else if (hh < 5) {
+      r1 = x; g1 = 0; b1 = c;
+    } else {
+      r1 = c; g1 = 0; b1 = x;
+    }
+    const m = l - c / 2;
+    return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
+  }
 
-  // Parameter values controlling the look of the filter.  Tuned by eye
-  // using the supplied reference picture.
-  // The following tuning values were chosen to produce a soft
-  // pastel‑purple wash without overwhelming the underlying image.
-  // They boost the red and blue channels more than green to hint at
-  // the lavender tones visible in the sample, while also gently
-  // lifting brightness and slightly lowering saturation.  Feel free
-  // to tweak these multipliers if you'd like a stronger or milder
-  // effect.
-  const satFactor = 1 - 0.15 * blend;      // reduce saturation up to 15%
-  const brightFactor = 1 + 0.10 * blend;   // increase brightness up to 10%
-  const rMul = 1 + 0.12 * blend;           // red boost
-  const gMul = 1 + 0.05 * blend;           // green boost
-  const bMul = 1 + 0.15 * blend;           // blue boost
-  const constantShift = {
-    r: 20 * blend,
-    g: 10 * blend,
-    b: 25 * blend
-  };
-
+  // Iterate through each pixel and apply the transformation
   for (let i = 0; i < data.length; i += 4) {
     let r = data[i];
     let g = data[i + 1];
     let b = data[i + 2];
-    // Convert to HSV for separate manipulation of saturation and value
+
+    // Convert to HSV to adjust saturation and brightness independently
     let [h, s, v] = rgbToHsv(r, g, b);
-    s = Math.min(1, s * satFactor);
-    v = Math.min(1, v * brightFactor);
+    // Boost saturation and brightness.  Clamp saturation at 1 to avoid
+    // oversaturation.
+    s = Math.min(1, s * (1 + satBoost));
+    v = Math.min(1, v * (1 + brightBoost));
     [r, g, b] = hsvToRgb(h, s, v);
-    // Apply channel multipliers for the purple tint
-    r *= rMul;
-    g *= gMul;
-    b *= bMul;
-    // Add constant colour shift
-    r += constantShift.r;
-    g += constantShift.g;
-    b += constantShift.b;
-    // Interpolate with the original pixel
-    let rNew = Math.max(0, Math.min(255, data[i] * (1 - blend) + r * blend));
-    let gNew = Math.max(0, Math.min(255, data[i + 1] * (1 - blend) + g * blend));
-    let bNew = Math.max(0, Math.min(255, data[i + 2] * (1 - blend) + b * blend));
 
-    // Final colour balance: add 65 yellow on the yellow/blue axis
-    const yellowShift = 18;
-    bNew = Math.max(0, Math.min(255, bNew - yellowShift));
+    // Apply a small warm colour shift
+    r = r + redShift;
+    g = g + greenShift;
+    b = b + blueShift;
 
-    data[i] = rNew;
-    data[i + 1] = gNew;
-    data[i + 2] = bNew;
-    // Alpha channel is preserved
+    // Contrast adjustment around the midpoint (128)
+    r = (r - 128) * (1 + contrastBoost) + 128;
+    g = (g - 128) * (1 + contrastBoost) + 128;
+    b = (b - 128) * (1 + contrastBoost) + 128;
+
+    // Hue adjustment in HSL space (+11 degrees makes the image slightly more blue)
+    let [hh, ss, ll] = rgbToHsl(r, g, b);
+    hh = (hh + 11) % 360;
+    [r, g, b] = hslToRgb(hh, ss, ll);
+
+    // Colour balance tweaks: push towards cyan and blue
+    r = r - 17; // cyan vs red
+    b = b + 13; // blue vs yellow
+
+    // Linearly interpolate between original pixel and fully adjusted
+    // pixel based on intensity blend.  This prevents abrupt jumps if
+    // users lower the intensity slider in the UI.
+    data[i] = Math.max(0, Math.min(255, data[i] * (1 - blend) + r * blend));
+    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] * (1 - blend) + g * blend));
+    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] * (1 - blend) + b * blend));
+    // Preserve alpha channel
   }
+
   ctx.putImageData(imageData, 0, 0);
   targetEl.src = canvas.toDataURL();
 }
