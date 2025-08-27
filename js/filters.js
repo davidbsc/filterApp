@@ -2,7 +2,7 @@ import { showToast } from './toast.js';
 import { applyOrangeTealFilter } from './filters/orangeTeal.js';
 import { applyBlackWhiteFilter } from './filters/blackWhite.js';
 import { applyHighContrastFilter } from './filters/highContrast.js';
-import { applyVintageFilter } from './filters/vintage.js';
+import { applyVintage80sFilter } from './filters/vintage80s.js';
 import { applySepiaFilter } from './filters/sepia.js';
 import { applyCoolToneFilter } from './filters/coolTone.js';
 import { applyBlurFilter } from './filters/blur.js';
@@ -15,7 +15,7 @@ import { applyBigSurFilter } from './filters/bigSur.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
-  //vintage: [
+  //'vintage-80s': [
   //  { name: 'alpha', label: 'Alpha', min: -100, max: 100, default: 0 },
   //  { name: 'beta', label: 'Beta', min: -50, max: 50, default: 0 },
   //  { name: 'gamma', label: 'Gamma', min: -50, max: 50, default: 0 },
@@ -485,7 +485,7 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
-  } else if (state.currentFilter.id === 'vintage') {
+  } else if (state.currentFilter.id === 'vintage-80s') {
       elements.previewImage.onload = () => {
         elements.previewImage.onload = null;
         const result = applyBrightnessContrast(
@@ -500,7 +500,7 @@ function applyFilterAdjustment(elements, state) {
       closeAdjustmentPanel(elements);
       showToast('Filter applied successfully', 'success');
     };
-    applyVintageFilter(state.previewBaseImage, elements.previewImage, {
+    applyVintage80sFilter(state.previewBaseImage, elements.previewImage, {
       intensity: state.filterSettings.intensity,
       alpha: state.filterSettings.alpha || 0,
       beta: state.filterSettings.beta || 0,
@@ -717,7 +717,7 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
-  } else if (state.currentFilter.id === 'vintage') {
+  } else if (state.currentFilter.id === 'vintage-80s') {
       const options = {
         intensity: parseInt(elements.intensitySlider.value, 10),
         alpha: state.customSettings.alpha || 0,
@@ -734,6 +734,6 @@ function previewCurrentFilter(elements, state) {
         parseInt(elements.contrastSlider.value, 10)
       );
     };
-    applyVintageFilter(state.previewBaseImage, elements.previewImage, options);
+    applyVintage80sFilter(state.previewBaseImage, elements.previewImage, options);
   }
 }

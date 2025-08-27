@@ -1,5 +1,5 @@
-// Vintage filter converted from Python implementation
-// Applies a classic vintage color grading with soft light blend and color tweaks
+// Vintage 80s filter converted from Python implementation
+// Applies a classic vintage 80s color grading with soft light blend and color tweaks
 
 function softLight(base, blend) {
   const b = base / 255;
@@ -60,7 +60,7 @@ function hsvToRgb(h, s, v) {
   return [(r1 + m) * 255, (g1 + m) * 255, (b1 + m) * 255];
 }
 
-export function applyVintageFilter(sourceImg, targetEl, options = {}) {
+export function applyVintage80sFilter(sourceImg, targetEl, options = {}) {
   const {
     intensity = 100,
     alpha = 0,
