@@ -39,7 +39,7 @@ function buildOrangeTealLUT(
 
 // Build lookup tables for hue shift and saturation boost
 //Version Orange Tail Con Viola
-function buildOrangeTealLUTv2(
+function buildOrangeTealLUTn2(
   sigmaH = 20,
   warmH = 17, //15
   coolH = 94, //90
@@ -98,7 +98,7 @@ function buildOrangeTealLUTv2(
 }
 
 //Versione Orange Tail con sostituzione verde con Viola
-function buildOrangeTealLUTv3(
+function buildOrangeTealLUTn3(
   // ======================= PARAMETRI PRINCIPALI DA MODIFICARE =======================
   //
   // 1. TONALITÀ DI PARTENZA (Source Hues)
@@ -117,7 +117,7 @@ function buildOrangeTealLUTv3(
   
   // 2. TONALITÀ DI DESTINAZIONE (Target Hues)
   //    Questo è il colore con cui vuoi sostituire il `greenSourceH`.
-  purpleTargetH = 164, // Viola/Magenta di destinazione. 164 è un buon punto di partenza.
+  purpleTargetH = 154, // Viola/Magenta di destinazione. 164 è un buon punto di partenza.
 
   // 3. AMPIEZZA E FORZA DELLA MODIFICA
   sigmaH = 20,         // Controlla l'ampiezza della sfumatura. Prova a DIMINUIRLO (es. 10-15) per rendere la selezione dei colori più netta e precisa.
@@ -196,7 +196,7 @@ function buildOrangeTealLUTv3(
 }
 
 //Version Orange Pink
-function buildOrangeTealLUTv4(
+function buildOrangeTealLUTn4(
   sigmaH = 20,
   warmH = 17,
   coolH = 94,
@@ -273,8 +273,9 @@ function buildOrangeTealLUTv4(
 }
 
 const LUT_V1 = buildOrangeTealLUT();
-const LUT_V2 = buildOrangeTealLUTv2();
-const LUT_V3 = buildOrangeTealLUTv3();
+const LUT_V2 = buildOrangeTealLUTn2();
+const LUT_V3 = buildOrangeTealLUTn3();
+const LUT_V4 = buildOrangeTealLUTn4();
 
 // Smooth contrast adjustment similar to the Python _smooth_contrast
 function smoothContrast(v, midBoost = 1.05, shadowMul = 0.93, hiMul = 1.06) {
@@ -336,7 +337,7 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
   const { intensity = 100, contrast = 0, brightness = 0, version = 1 } = options;
 
   const { hueLut: HUE_LUT, satLut: SAT_LUT } =
-    version === 3 ? LUT_V3 : version === 2 ? LUT_V2 : LUT_V1;
+  version ===  4 ? LUT_V4 : version === 3 ? LUT_V3 : version === 2 ? LUT_V2 : LUT_V1;
 
   const greenLowerDeg = 50;
   const greenUpperDeg = 130;
