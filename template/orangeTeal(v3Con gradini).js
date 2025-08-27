@@ -96,20 +96,14 @@ function buildOrangeTealLUTv2(
 }
 
 // Build lookup tables for hue shift and saturation boost (version 3)
-// Build lookup tables for hue shift and saturation boost (versione 3 MIGLIORATA)
-//Orange & Pink
 function buildOrangeTealLUTv3(
   sigmaH = 20,
   warmH = 17,
   coolH = 94,
   pinkH = 140,
-  // NUOVI PARAMETRI per la mappatura verde -> viola
-  greenSourceH = 90,   // Tonalità di verde da cui partire (centro della sfumatura)
-  purpleTargetH = 164, // Tonalità di viola di destinazione (327 / 2)
   satBoostWarm = 1.45,
   satBoostCool = 1.20,
-  satBoostPink = 1.25,
-  satBoostPurple = 1.4 // Boost di saturazione per il nuovo viola
+  satBoostPink = 1.25
 ) {
   const hueLut = new Array(180).fill(0);
   const satLut = new Array(180).fill(1.0);
@@ -118,25 +112,17 @@ function buildOrangeTealLUTv3(
   const warmRad = (warmH * 2 * Math.PI) / 180;
   const coolRad = (coolH * 2 * Math.PI) / 180;
   const pinkRad = (pinkH * 2 * Math.PI) / 180;
-  const purpleRad = (purpleTargetH * 2 * Math.PI) / 180; // NUOVO: Radiani per il viola
 
   for (let h = 0; h < 180; h++) {
     const dw = Math.min(Math.abs(h - warmH), 180 - Math.abs(h - warmH));
     const dc = Math.min(Math.abs(h - coolH), 180 - Math.abs(h - coolH));
     const dp = Math.min(Math.abs(h - pinkH), 180 - Math.abs(h - pinkH));
-    const dg = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH)); // NUOVO: calcolo distanza dal verde
 
     let wWarm = Math.exp(-(dw * dw) / twoSigma2);
     let wCool = Math.exp(-(dc * dc) / twoSigma2);
     let wPink = Math.exp(-(dp * dp) / twoSigma2);
-    let wGreen = Math.exp(-(dg * dg) / twoSigma2); // NUOVO: calcolo peso per il verde
 
-    // Se la tonalità è molto vicina al verde, diamo più importanza a quella mappatura
-    if (h >= 60 && h <= 120) {
-        wGreen *= 1.5;
-    }
-
-    const wSum = wWarm + wCool + wPink + wGreen; // NUOVO: aggiungi il peso del verde
+    const wSum = wWarm + wCool + wPink;
 
     if (wSum < 1e-6) {
       hueLut[h] = h;
@@ -145,18 +131,15 @@ function buildOrangeTealLUTv3(
       wWarm /= wSum;
       wCool /= wSum;
       wPink /= wSum;
-      wGreen /= wSum; // NUOVO: normalizza il peso del verde
 
       const avgX =
         wWarm * Math.cos(warmRad) +
         wCool * Math.cos(coolRad) +
-        wPink * Math.cos(pinkRad) +
-        wGreen * Math.cos(purpleRad); // NUOVO: aggiungi il viola alla media
+        wPink * Math.cos(pinkRad);
       const avgY =
         wWarm * Math.sin(warmRad) +
         wCool * Math.sin(coolRad) +
-        wPink * Math.sin(pinkRad) +
-        wGreen * Math.sin(purpleRad); // NUOVO: aggiungi il viola alla media
+        wPink * Math.sin(pinkRad);
 
       let newHueDeg = (Math.atan2(avgY, avgX) * 180) / Math.PI;
       if (newHueDeg < 0) newHueDeg += 360;
@@ -164,10 +147,7 @@ function buildOrangeTealLUTv3(
 
       hueLut[h] = newHue;
       satLut[h] =
-        wWarm * satBoostWarm +
-        wCool * satBoostCool +
-        wPink * satBoostPink +
-        wGreen * satBoostPurple; // NUOVO: aggiungi il boost di saturazione per il viola
+        wWarm * satBoostWarm + wCool * satBoostCool + wPink * satBoostPink;
     }
   }
 
@@ -270,11 +250,23 @@ export function applyOrangeTealFilter(sourceImg, targetEl, options = {}) {
     let [h, s, v] = rgbToHsv(r0, g0, b0);
     let newHue, newSat;
 
-    const hIdx = Math.floor(h / 2);
-    const newHueIdx = HUE_LUT[hIdx];
-    const satMult = SAT_LUT[hIdx];
-    newHue = newHueIdx * 2;
-    newSat = Math.min(1, s * satMult);
+    const isGreen =
+      version === 3 &&
+      h >= greenLowerDeg &&
+      h <= greenUpperDeg &&
+      s >= satMin &&
+      v >= valMin;
+
+    if (isGreen) {
+      newHue = targetDeg;
+      newSat = Math.min(1, s * satBoostGreen);
+    } else {
+      const hIdx = Math.floor(h / 2);
+      const newHueIdx = HUE_LUT[hIdx];
+      const satMult = SAT_LUT[newHueIdx];
+      newHue = newHueIdx * 2;
+      newSat = Math.min(1, s * satMult);
+    }
 
     const newVal = smoothContrast(v);
     const [nr, ng, nb] = hsvToRgb(newHue, newSat, newVal);

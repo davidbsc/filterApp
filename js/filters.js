@@ -201,7 +201,7 @@ function openAdjustmentPanel(filterName, elements, state) {
     elements.brightnessSlider.value = 0;
     state.customSettings = {};
     if (state.currentFilter.id === 'orange-teal') {
-      state.customSettings.version = 2;
+      state.customSettings.version = 3;
     }
   }
   updateIntensityValue(elements);
