@@ -15,12 +15,12 @@ import { applyBigSurFilter } from './filters/bigSur.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
-  vintage: [
-    { name: 'alpha', label: 'Alpha', min: -100, max: 100, default: 0 },
-    { name: 'beta', label: 'Beta', min: -50, max: 50, default: 0 },
-    { name: 'gamma', label: 'Gamma', min: -50, max: 50, default: 0 },
-    { name: 'delta', label: 'Delta', min: -50, max: 50, default: 0 }
-  ]
+  //vintage: [
+  //  { name: 'alpha', label: 'Alpha', min: -100, max: 100, default: 0 },
+  //  { name: 'beta', label: 'Beta', min: -50, max: 50, default: 0 },
+  //  { name: 'gamma', label: 'Gamma', min: -50, max: 50, default: 0 },
+  //  { name: 'delta', label: 'Delta', min: -50, max: 50, default: 0 }
+  //]
 };
 
 function enableValueEdit(slider, valueSpan, onChange, elements, state) {
