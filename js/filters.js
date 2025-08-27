@@ -11,6 +11,7 @@ import { applyVignetteFilter } from './filters/vignette.js';
 import { applyCaliforniaFilter } from './filters/california.js';
 import { applyGoldenHillsFilter } from './filters/goldenHills.js';
 import { applyPfeifferBeachFilter } from './filters/pfeifferBeach.js';
+import { applyBigSurFilter } from './filters/bigSur.js';
 import { applyBrightnessContrast } from './adjustments.js';
 
 const sliderConfigs = {
@@ -439,6 +440,29 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'big-sur') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      colors: ['#a75d5a'],
+      sigmas: [25],
+      backgroundColor: '#8a8a8a',
+      overlay: 'BigSurGradient1'
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
       elements.previewImage.onload = () => {
         elements.previewImage.onload = null;
@@ -636,6 +660,24 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'big-sur') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      colors: ['#a75d5a'],
+      sigmas: [25],
+      backgroundColor: '#8a8a8a',
+      overlay: 'BigSurGradient1'
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'vintage') {
       const options = {
         intensity: parseInt(elements.intensitySlider.value, 10),
