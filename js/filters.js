@@ -440,6 +440,28 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'mcway-falls') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      targetColors: ['#a75d5a', '#c0e3f7'],
+      sigmas: [25, 25],
+      backgroundColor: '#8a8a8a'
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      const result = applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+      state.currentImage = result;
+      state.previewBaseImage = null;
+      state.previousSettings = null;
+      closeAdjustmentPanel(elements);
+      showToast('Filter applied successfully', 'success');
+    };
+    applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'big-sur') {
     const options = {
       intensity: parseInt(elements.intensitySlider.value, 10),
@@ -660,6 +682,23 @@ function previewCurrentFilter(elements, state) {
       );
     };
     applyPfeifferBeachFilter(state.previewBaseImage, elements.previewImage, options);
+  } else if (state.currentFilter.id === 'mcway-falls') {
+    const options = {
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      targetColors: ['#a75d5a', '#c0e3f7'],
+      sigmas: [25, 25],
+      backgroundColor: '#8a8a8a'
+    };
+    elements.previewImage.onload = () => {
+      elements.previewImage.onload = null;
+      applyBrightnessContrast(
+        elements.previewImage,
+        elements.previewImage,
+        parseInt(elements.brightnessSlider.value, 10),
+        parseInt(elements.contrastSlider.value, 10)
+      );
+    };
+    applyBigSurFilter(state.previewBaseImage, elements.previewImage, options);
   } else if (state.currentFilter.id === 'big-sur') {
     const options = {
       intensity: parseInt(elements.intensitySlider.value, 10),
