@@ -98,7 +98,7 @@ function buildOrangeTealLUTv2(
 // Build lookup tables for hue shift and saturation boost (version 3)
 // Build lookup tables for hue shift and saturation boost (versione 3 MIGLIORATA)
 //Orange & Pink
-function buildOrangeTealLUTv3(
+function buildOrangeTealLUTv4(
   sigmaH = 20,
   warmH = 17,
   coolH = 94,
@@ -168,6 +168,87 @@ function buildOrangeTealLUTv3(
         wCool * satBoostCool +
         wPink * satBoostPink +
         wGreen * satBoostPurple; // NUOVO: aggiungi il boost di saturazione per il viola
+    }
+  }
+
+  return { hueLut, satLut };
+}
+function buildOrangeTealLUTv3(
+  sigmaH = 20,
+  warmH = 17,
+  coolH = 94,
+  pinkH = 140,
+  greenSourceH = 60,
+  purpleTargetH = 164,
+  satBoostWarm = 1.45,
+  satBoostCool = 1.20,
+  satBoostPink = 1.25,
+  satBoostPurple = 1.4
+) {
+  const hueLut = new Array(180).fill(0);
+  const satLut = new Array(180).fill(1.0);
+  const twoSigma2 = 2 * sigmaH * sigmaH;
+
+  const warmRad = (warmH * 2 * Math.PI) / 180;
+  const coolRad = (coolH * 2 * Math.PI) / 180;
+  const pinkRad = (pinkH * 2 * Math.PI) / 180;
+  const purpleRad = (purpleTargetH * 2 * Math.PI) / 180;
+
+  for (let h = 0; h < 180; h++) {
+    const dw = Math.min(Math.abs(h - warmH), 180 - Math.abs(h - warmH));
+    const dc = Math.min(Math.abs(h - coolH), 180 - Math.abs(h - coolH));
+    const dp = Math.min(Math.abs(h - pinkH), 180 - Math.abs(h - pinkH));
+    const dg = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
+
+    let wWarm = Math.exp(-(dw * dw) / twoSigma2);
+    let wCool = Math.exp(-(dc * dc) / twoSigma2);
+    let wPink = Math.exp(-(dp * dp) / twoSigma2);
+    let wGreen = Math.exp(-(dg * dg) / twoSigma2);
+
+    // --- ZONA MODIFICATA ---
+    // RIMOSSO il boost a gradini "if (h >= 50 && h <= 75)"
+    
+    // AGGIUNTO un boost graduale e configurabile per i verdi
+    const boostSigma = 8.0;   // Controlla la LARGHEZZA del boost (più piccolo = più stretto)
+    const maxBoost = 1.75;    // Controlla la FORZA massima del boost al centro dei verdi
+    
+    const distFromGreen = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
+    const boostFactor = Math.exp(-(distFromGreen * distFromGreen) / (2 * boostSigma * boostSigma));
+    wGreen *= (1 + (maxBoost - 1) * boostFactor);
+    // -----------------------
+
+    const wSum = wWarm + wCool + wPink + wGreen;
+
+    if (wSum < 1e-6) {
+      hueLut[h] = h;
+      satLut[h] = 1.0;
+    } else {
+      wWarm /= wSum;
+      wCool /= wSum;
+      wPink /= wSum;
+      wGreen /= wSum;
+
+      const avgX =
+        wWarm * Math.cos(warmRad) +
+        wCool * Math.cos(coolRad) +
+        wPink * Math.cos(pinkRad) +
+        wGreen * Math.cos(purpleRad);
+      const avgY =
+        wWarm * Math.sin(warmRad) +
+        wCool * Math.sin(coolRad) +
+        wPink * Math.sin(pinkRad) +
+        wGreen * Math.sin(purpleRad);
+
+      let newHueDeg = (Math.atan2(avgY, avgX) * 180) / Math.PI;
+      if (newHueDeg < 0) newHueDeg += 360;
+      const newHue = Math.round(newHueDeg / 2) % 180;
+
+      hueLut[h] = newHue;
+      satLut[h] =
+        wWarm * satBoostWarm +
+        wCool * satBoostCool +
+        wPink * satBoostPink +
+        wGreen * satBoostPurple;
     }
   }
 
