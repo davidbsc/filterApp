@@ -189,11 +189,20 @@ function openAdjustmentPanel(filterName, elements, state) {
     elements.contrastSlider.value = state.previousSettings.contrast;
     elements.brightnessSlider.value = state.previousSettings.brightness;
     state.customSettings = { ...state.previousSettings.customSettings };
+    if (
+      state.currentFilter.id === 'orange-teal' &&
+      state.customSettings.version === undefined
+    ) {
+      state.customSettings.version = 2;
+    }
   } else {
     elements.intensitySlider.value = 100;
     elements.contrastSlider.value = 0;
     elements.brightnessSlider.value = 0;
     state.customSettings = {};
+    if (state.currentFilter.id === 'orange-teal') {
+      state.customSettings.version = 2;
+    }
   }
   updateIntensityValue(elements);
   updateContrastValue(elements);
@@ -255,7 +264,8 @@ function applyFilterAdjustment(elements, state) {
       showToast('Filter applied successfully', 'success');
     };
     applyOrangeTealFilter(state.previewBaseImage, elements.previewImage, {
-      intensity: state.filterSettings.intensity
+      intensity: state.filterSettings.intensity,
+      version: state.filterSettings.version
     });
   } else if (state.currentFilter.id === 'black-white') {
     elements.previewImage.onload = () => {
@@ -530,7 +540,8 @@ function previewCurrentFilter(elements, state) {
   if (!state.previewBaseImage || !state.currentFilter) return;
   if (state.currentFilter.id === 'orange-teal') {
     const options = {
-      intensity: parseInt(elements.intensitySlider.value, 10)
+      intensity: parseInt(elements.intensitySlider.value, 10),
+      version: state.customSettings.version
     };
     elements.previewImage.onload = () => {
       elements.previewImage.onload = null;
