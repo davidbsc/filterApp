@@ -207,7 +207,7 @@ function buildOrangeTealLUTn4(
   satBoostWarm = 1.45,
   satBoostCool = 1.20,
   satBoostPink = 1.25,
-  satBoostPurple = 1.4 // Boost di saturazione per il nuovo viola
+  satBoostPurple = .4 // Boost di saturazione per il nuovo viola (1.4)
 ) {
   const hueLut = new Array(180).fill(0);
   const satLut = new Array(180).fill(1.0);
