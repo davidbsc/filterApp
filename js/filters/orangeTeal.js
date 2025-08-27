@@ -1,7 +1,8 @@
 // Orange & Teal filter converted from Python implementation
 // Applies a smooth orange and teal color grading to an image element
 
-// Build lookup tables for hue shift and saturation boost (version 1)
+// Build lookup tables for hue shift and saturation boost
+//Version classica Orange Tail
 function buildOrangeTealLUT(
   sigmaH = 15,
   warmH = 17, //original 15
@@ -36,7 +37,8 @@ function buildOrangeTealLUT(
   return { hueLut, satLut };
 }
 
-// Build lookup tables for hue shift and saturation boost (version 2)
+// Build lookup tables for hue shift and saturation boost
+//Version Orange Tail Con Viola
 function buildOrangeTealLUTv2(
   sigmaH = 20,
   warmH = 17, //15
@@ -95,9 +97,105 @@ function buildOrangeTealLUTv2(
   return { hueLut, satLut };
 }
 
-// Build lookup tables for hue shift and saturation boost (version 3)
-// Build lookup tables for hue shift and saturation boost (versione 3 MIGLIORATA)
-//Orange & Pink
+//Versione Orange Tail con sostituzione verde con Viola
+function buildOrangeTealLUTv3(
+  // ======================= PARAMETRI PRINCIPALI DA MODIFICARE =======================
+  //
+  // 1. TONALITÀ DI PARTENZA (Source Hues)
+  //    Questi valori (0-180) definiscono i colori che vuoi modificare.
+  //    - Verde: ~60
+  //    - Giallo: ~45
+  //    - Ciano/Azzurrino: ~90
+  //    - Blu: ~120
+  //    - Viola/Magenta: ~150
+  //    - Rosso: 0 o 180
+  //
+  warmH = 17,          // Arancione (pelle)
+  coolH = 94,          // Ciano/Teal. Prova ad AUMENTARLO (es. 100-105) per spostarlo più verso il blu e lontano dal verde.
+  pinkH = 140,         // Rosa/Magenta
+  greenSourceH = 60,   // **IL TUO VERDE DA SOSTITUIRE**. Modifica questo valore per centrare esattamente la tonalità di verde che ti interessa. Prova tra 50 e 70.
+  
+  // 2. TONALITÀ DI DESTINAZIONE (Target Hues)
+  //    Questo è il colore con cui vuoi sostituire il `greenSourceH`.
+  purpleTargetH = 164, // Viola/Magenta di destinazione. 164 è un buon punto di partenza.
+
+  // 3. AMPIEZZA E FORZA DELLA MODIFICA
+  sigmaH = 20,         // Controlla l'ampiezza della sfumatura. Prova a DIMINUIRLO (es. 10-15) per rendere la selezione dei colori più netta e precisa.
+  boostSigma = 5.0, //8    // **LARGHEZZA del boost per il verde**. Un valore più PICCOLO (es. 3-5) concentra la modifica solo sul verde che hai scelto.
+  maxBoost = 3.0, //1.75      // **FORZA del boost per il verde**. Un valore più GRANDE (es. 2.5-4.0) rende la sostituzione del verde più aggressiva e prioritaria rispetto alle altre.
+  // =================================================================================
+
+  satBoostWarm = 1.45,
+  satBoostCool = 1.20,
+  satBoostPink = 1.25,
+  satBoostPurple = 1.4
+) {
+  const hueLut = new Array(180).fill(0);
+  const satLut = new Array(180).fill(1.0);
+  const twoSigma2 = 2 * sigmaH * sigmaH;
+
+  const warmRad = (warmH * 2 * Math.PI) / 180;
+  const coolRad = (coolH * 2 * Math.PI) / 180;
+  const pinkRad = (pinkH * 2 * Math.PI) / 180;
+  const purpleRad = (purpleTargetH * 2 * Math.PI) / 180;
+
+  for (let h = 0; h < 180; h++) {
+    const dw = Math.min(Math.abs(h - warmH), 180 - Math.abs(h - warmH));
+    const dc = Math.min(Math.abs(h - coolH), 180 - Math.abs(h - coolH));
+    const dp = Math.min(Math.abs(h - pinkH), 180 - Math.abs(h - pinkH));
+    const dg = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
+
+    let wWarm = Math.exp(-(dw * dw) / twoSigma2);
+    let wCool = Math.exp(-(dc * dc) / twoSigma2);
+    let wPink = Math.exp(-(dp * dp) / twoSigma2);
+    let wGreen = Math.exp(-(dg * dg) / twoSigma2);
+
+    // Questa è la logica che dà priorità alla mappatura del verde.
+    // Usa i parametri `boostSigma` e `maxBoost` per renderla più forte e precisa.
+    const distFromGreen = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
+    const boostFactor = Math.exp(-(distFromGreen * distFromGreen) / (2 * boostSigma * boostSigma));
+    wGreen *= (1 + (maxBoost - 1) * boostFactor);
+
+    const wSum = wWarm + wCool + wPink + wGreen;
+
+    if (wSum < 1e-6) {
+      hueLut[h] = h;
+      satLut[h] = 1.0;
+    } else {
+      wWarm /= wSum;
+      wCool /= wSum;
+      wPink /= wSum;
+      wGreen /= wSum;
+
+      // Calcola la nuova tonalità come media pesata
+      const avgX =
+        wWarm * Math.cos(warmRad) +
+        wCool * Math.cos(coolRad) +
+        wPink * Math.cos(pinkRad) +
+        wGreen * Math.cos(purpleRad); // Il verde viene mappato sul viola
+      const avgY =
+        wWarm * Math.sin(warmRad) +
+        wCool * Math.sin(coolRad) +
+        wPink * Math.sin(pinkRad) +
+        wGreen * Math.sin(purpleRad); // Il verde viene mappato sul viola
+
+      let newHueDeg = (Math.atan2(avgY, avgX) * 180) / Math.PI;
+      if (newHueDeg < 0) newHueDeg += 360;
+      const newHue = Math.round(newHueDeg / 2) % 180;
+
+      hueLut[h] = newHue;
+      satLut[h] =
+        wWarm * satBoostWarm +
+        wCool * satBoostCool +
+        wPink * satBoostPink +
+        wGreen * satBoostPurple;
+    }
+  }
+
+  return { hueLut, satLut };
+}
+
+//Version Orange Pink
 function buildOrangeTealLUTv4(
   sigmaH = 20,
   warmH = 17,
@@ -168,87 +266,6 @@ function buildOrangeTealLUTv4(
         wCool * satBoostCool +
         wPink * satBoostPink +
         wGreen * satBoostPurple; // NUOVO: aggiungi il boost di saturazione per il viola
-    }
-  }
-
-  return { hueLut, satLut };
-}
-function buildOrangeTealLUTv3(
-  sigmaH = 20,
-  warmH = 17,
-  coolH = 94,
-  pinkH = 140,
-  greenSourceH = 60,
-  purpleTargetH = 164,
-  satBoostWarm = 1.45,
-  satBoostCool = 1.20,
-  satBoostPink = 1.25,
-  satBoostPurple = 1.4
-) {
-  const hueLut = new Array(180).fill(0);
-  const satLut = new Array(180).fill(1.0);
-  const twoSigma2 = 2 * sigmaH * sigmaH;
-
-  const warmRad = (warmH * 2 * Math.PI) / 180;
-  const coolRad = (coolH * 2 * Math.PI) / 180;
-  const pinkRad = (pinkH * 2 * Math.PI) / 180;
-  const purpleRad = (purpleTargetH * 2 * Math.PI) / 180;
-
-  for (let h = 0; h < 180; h++) {
-    const dw = Math.min(Math.abs(h - warmH), 180 - Math.abs(h - warmH));
-    const dc = Math.min(Math.abs(h - coolH), 180 - Math.abs(h - coolH));
-    const dp = Math.min(Math.abs(h - pinkH), 180 - Math.abs(h - pinkH));
-    const dg = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
-
-    let wWarm = Math.exp(-(dw * dw) / twoSigma2);
-    let wCool = Math.exp(-(dc * dc) / twoSigma2);
-    let wPink = Math.exp(-(dp * dp) / twoSigma2);
-    let wGreen = Math.exp(-(dg * dg) / twoSigma2);
-
-    // --- ZONA MODIFICATA ---
-    // RIMOSSO il boost a gradini "if (h >= 50 && h <= 75)"
-    
-    // AGGIUNTO un boost graduale e configurabile per i verdi
-    const boostSigma = 8.0;   // Controlla la LARGHEZZA del boost (più piccolo = più stretto)
-    const maxBoost = 1.75;    // Controlla la FORZA massima del boost al centro dei verdi
-    
-    const distFromGreen = Math.min(Math.abs(h - greenSourceH), 180 - Math.abs(h - greenSourceH));
-    const boostFactor = Math.exp(-(distFromGreen * distFromGreen) / (2 * boostSigma * boostSigma));
-    wGreen *= (1 + (maxBoost - 1) * boostFactor);
-    // -----------------------
-
-    const wSum = wWarm + wCool + wPink + wGreen;
-
-    if (wSum < 1e-6) {
-      hueLut[h] = h;
-      satLut[h] = 1.0;
-    } else {
-      wWarm /= wSum;
-      wCool /= wSum;
-      wPink /= wSum;
-      wGreen /= wSum;
-
-      const avgX =
-        wWarm * Math.cos(warmRad) +
-        wCool * Math.cos(coolRad) +
-        wPink * Math.cos(pinkRad) +
-        wGreen * Math.cos(purpleRad);
-      const avgY =
-        wWarm * Math.sin(warmRad) +
-        wCool * Math.sin(coolRad) +
-        wPink * Math.sin(pinkRad) +
-        wGreen * Math.sin(purpleRad);
-
-      let newHueDeg = (Math.atan2(avgY, avgX) * 180) / Math.PI;
-      if (newHueDeg < 0) newHueDeg += 360;
-      const newHue = Math.round(newHueDeg / 2) % 180;
-
-      hueLut[h] = newHue;
-      satLut[h] =
-        wWarm * satBoostWarm +
-        wCool * satBoostCool +
-        wPink * satBoostPink +
-        wGreen * satBoostPurple;
     }
   }
 
